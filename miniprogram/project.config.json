@@ -1,0 +1,29 @@
+{
+  "appid": "wxef484150791ff62b",
+  "compileType": "miniprogram",
+  "projectname": "cook-timer",
+  "miniprogramRoot": "./",
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true,
+    "newFeature": true,
+    "coverView": true,
+    "nodeModules": false,
+    "useCompilerPlugins": ["typescript"],
+    "autoAudits": false,
+    "showShadowRootInWxmlPanel": true,
+    "scopeDataCheck": false,
+    "checkInvalidKey": true,
+    "checkSiteMap": true,
+    "uploadWithSourceMap": true,
+    "compileHotReLoad": false,
+    "useMultiFrameRuntime": true,
+    "useApiHook": true,
+    "useApiHostProcess": true,
+    "ignoreUploadUnusedFiles": true
+  },
+  "condition": {}
+}

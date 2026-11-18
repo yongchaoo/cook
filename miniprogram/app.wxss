@@ -1,0 +1,6 @@
+/* 全局基础样式。配色沿用原型「元气橙蓝」主题，业务样式放各页面 wxss。 */
+page {
+  background-color: #FFF4E3;
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "PingFang SC", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}

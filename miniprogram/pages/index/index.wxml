@@ -1,0 +1,5 @@
+<!-- 最简 hello 页面：只验证编译与真机渲染，不实现做菜计时原型。 -->
+<view class="container">
+  <text class="title">Hello</text>
+  <text class="subtitle">做菜计时 · 小程序骨架已跑通</text>
+</view>

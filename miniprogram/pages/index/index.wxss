@@ -1,0 +1,22 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48rpx;
+  box-sizing: border-box;
+}
+
+.title {
+  font-size: 96rpx;
+  font-weight: 700;
+  color: #E85D04;
+  letter-spacing: 4rpx;
+}
+
+.subtitle {
+  margin-top: 24rpx;
+  font-size: 28rpx;
+  color: #8A7A6A;
+}

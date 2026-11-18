@@ -1,0 +1,18 @@
+.DS_Store
+node_modules/
+.idea/
+
+# 微信开发者工具生成的本地私有配置（含个人设置，勿入库）
+miniprogram/project.private.config.json
+
+# 真机预览二维码为临时产物
+plans/preview-qr.png
+
+# 小程序凭证：含 AppSecret，禁止入库（本地保留；如需共享改用脱敏模板）
+docs/wxamp-info.md
+
+# AI 工作上下文（非项目源码）
+.workbuddy/
+
+# 安装包缓存（_downloads/ 内有 249MB dmg，非源码）
+_downloads/
