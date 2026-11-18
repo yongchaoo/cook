@@ -1,0 +1,1203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>记忆里的美食 · 小程序交互原型 v1.2</title>
+<style>
+  :root{
+    --bg:#FFF4E3;--phone:#FFFDF8;
+    --primary:#E85D04;--primary-2:#FF7A00;--accent:#2E90FA;
+    --warm:#FFF2E0;--warm-2:#FFE3BF;
+    --text:#2B231B;--muted:#9C8B78;--line:#F3E5D0;
+    --green:#27996b;--green-bg:#e7f6ef;
+    --blue-deep:#123E7C;
+    --shadow:0 18px 50px rgba(180,110,40,.2);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    background:radial-gradient(1200px 600px at 15% 0%,#FFF3DE 0%,transparent 60%),radial-gradient(900px 500px at 100% 100%,#FFE7C4 0%,transparent 55%),var(--bg);
+    color:var(--text);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 16px;gap:14px;
+  }
+  .stage-hint{width:390px;max-width:100%;text-align:center;color:#8a7a6b;font-size:12.5px;line-height:1.6}
+  .stage-hint b{color:var(--primary)}
+
+  .phone{width:390px;max-width:100%;height:844px;max-height:92vh;background:var(--phone);border-radius:46px;box-shadow:var(--shadow),0 0 0 11px #2f2a26,0 0 0 13px #4a433d;position:relative;overflow:hidden;display:flex;flex-direction:column}
+  .island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:118px;height:32px;background:#111;border-radius:20px;z-index:30}
+  .statusbar{height:50px;flex:0 0 50px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;padding-top:8px;font-size:14px;font-weight:600;z-index:20}
+  .statusbar .icons{display:flex;gap:6px;font-size:13px}
+
+  .screens{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;position:relative}
+  .view{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}
+  .view.hidden{display:none}
+  .scroll{flex:1 1 auto;overflow-y:auto;overflow-x:hidden;padding:14px 16px 24px;scroll-behavior:smooth}
+  .scroll::-webkit-scrollbar{width:0}
+  .scroll.tight{padding:0 16px 24px}
+
+  /* ---------- 底部 tabBar ---------- */
+  .tabbar{flex:0 0 64px;display:flex;align-items:stretch;border-top:1px solid var(--line);background:#fff;padding-bottom:4px;z-index:15}
+  .tabbar.hidden{display:none}
+  .tab{flex:1;border:none;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#b0a191;font-size:10.5px;font-weight:600;cursor:pointer}
+  .tab .ti{font-size:20px;line-height:1;filter:grayscale(1);opacity:.6}
+  .tab.on{color:var(--primary)}
+  .tab.on .ti{filter:none;opacity:1;transform:translateY(-1px)}
+
+  /* ---------- 通用小组件 ---------- */
+  .badge{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:800;border-radius:8px;padding:2px 7px;white-space:nowrap}
+  .badge-off{color:#1B6FD0;background:#E9F3FF;border:1px solid #C7E0FF}
+  .badge-per{color:#8a6a52;background:#F5EADA;border:1px solid #E8D7BE}
+  .badge-ok{color:var(--green);background:var(--green-bg);border:1px solid #BFE7D3}
+  .badge-wait{color:#B85A1E;background:var(--warm);border:1px solid #FFD7AC}
+  .sec-title{display:flex;align-items:baseline;gap:7px;margin:0 2px 10px}
+  .sec-title h2{margin:0;font-size:15px;font-weight:800;color:#3a2f25}
+  .sec-title span{font-size:10.5px;color:#b3a495;font-weight:600}
+  .card{background:#fff;border:1.5px solid var(--line);border-radius:18px}
+  .muted{color:var(--muted)}
+  .txt-link{border:none;background:transparent;color:#a89a8c;font-size:11.5px;font-weight:600;cursor:pointer;padding:5px 8px}
+  .txt-link:hover{color:var(--primary)}
+  .empty{text-align:center;padding:46px 20px;color:var(--muted)}
+  .empty .e-icon{font-size:44px;margin-bottom:8px}
+  .empty h4{margin:0 0 6px;color:#6f6053;font-size:15px}
+  .empty p{margin:0;font-size:12px;line-height:1.6}
+
+  /* ---------- 发现页 ---------- */
+  .dc-hero{flex:0 0 auto;padding:16px 20px 20px;background:linear-gradient(135deg,#FFE9CC,#FFD7AC);border-bottom:1px solid var(--line)}
+  .dc-hero .kicker{font-size:10.5px;font-weight:800;color:#B85A1E;letter-spacing:2px;margin-bottom:7px}
+  .dc-hero h1{margin:0;font-size:27px;font-weight:900;letter-spacing:.5px;line-height:1.2}
+  .dc-hero h1 em{font-style:normal;color:var(--primary)}
+  .dc-hero p{margin:8px 0 14px;font-size:12px;color:#A85C1A;line-height:1.6;font-weight:600}
+  .stat-row{display:flex;gap:8px}
+  .stat{flex:1;background:rgba(255,255,255,.82);border-radius:13px;padding:9px 6px;text-align:center}
+  .stat b{display:block;font-size:19px;font-weight:900;color:var(--primary);line-height:1.1}
+  .stat span{font-size:9.5px;color:#A85C1A;font-weight:700}
+  .topic-row{display:flex;gap:9px;overflow-x:auto;padding:2px 0 4px}
+  .topic-row::-webkit-scrollbar{display:none}
+  .topic{min-width:150px;border:none;text-align:left;border-radius:16px;padding:13px 14px;color:#fff;cursor:pointer;font-weight:800;font-size:14px;line-height:1.35}
+  .topic small{display:block;font-size:10px;font-weight:600;opacity:.88;margin-top:5px}
+  .topic.t1{background:linear-gradient(135deg,#FF9A3D,#F25600)}
+  .topic.t2{background:linear-gradient(135deg,#4FA3FF,#1B6FD0)}
+  .topic.t3{background:linear-gradient(135deg,#F2B45C,#D97A16)}
+  .pick{width:100%;display:flex;gap:10px;align-items:flex-start;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:11px 12px;margin-bottom:9px;cursor:pointer;text-align:left}
+  .pick:hover{border-color:#FFC48A}
+  .pick .pt{font-size:9.5px;font-weight:800;color:#B85A1E;background:var(--warm);border-radius:7px;padding:3px 7px;flex:none;margin-top:1px}
+  .pick .pb{flex:1;min-width:0}
+  .pick .pb b{display:block;font-size:13px;margin-bottom:3px}
+  .pick .pb span{display:block;font-size:10.5px;color:var(--muted);line-height:1.45}
+  .pick .pd{font-size:10px;color:#b3a495;flex:none}
+
+  /* ---------- 搜索页 ---------- */
+  .list-hero{flex:0 0 auto;padding:12px 20px 14px;background:linear-gradient(135deg,#FFE9CC,#FFD7AC);border-bottom:1px solid var(--line)}
+  .list-hero h1{margin:0;font-size:23px;font-weight:800;letter-spacing:.5px}
+  .list-hero h1 .hero-dot{color:var(--primary-2)}
+  .list-hero p{margin:4px 0 0;font-size:11.5px;color:#A85C1A;font-weight:600}
+  .search-row{flex:0 0 auto;padding:12px 16px 8px;background:var(--phone)}
+  .search-box{display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:0 12px;height:42px;box-shadow:0 2px 8px rgba(120,80,50,.05)}
+  .search-box:focus-within{border-color:var(--primary-2)}
+  .search-box .mag{font-size:16px;color:#b3a495}
+  .search-box input{flex:1;border:none;outline:none;font-size:14px;color:var(--text);background:transparent}
+  .search-box input::placeholder{color:#b9ac9e}
+  .search-box .clear{border:none;background:#F2E4CF;color:#8a7a6b;border-radius:50%;width:20px;height:20px;font-size:12px;cursor:pointer;display:none;line-height:1}
+  .domain-row{flex:0 0 auto;display:flex;gap:6px;padding:2px 16px 9px;background:var(--phone)}
+  .dom{flex:1;border:1.5px solid var(--line);background:#fff;color:#8a7a6b;border-radius:11px;padding:7px 4px;font-size:11.5px;font-weight:700;cursor:pointer;text-align:center}
+  .dom.on{background:#FFF0DC;border-color:var(--primary-2);color:var(--primary)}
+  .cat-row{flex:0 0 auto;display:flex;gap:7px;padding:0 16px 10px;overflow-x:auto;background:var(--phone)}
+  .cat-row::-webkit-scrollbar{display:none}
+  .cat{border:1px solid var(--line);background:#fff;color:#8a7a6b;border-radius:20px;padding:6px 13px;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer}
+  .cat.on{background:var(--primary);border-color:var(--primary);color:#fff}
+  .dish-scroll{flex:1 1 auto;overflow-y:auto;padding:2px 16px 20px}
+  .dish-scroll::-webkit-scrollbar{width:0}
+  .result-tip{font-size:11.5px;color:var(--muted);margin:2px 2px 10px}
+  .dish-card{display:flex;gap:13px;align-items:center;background:#fff;border:1.5px solid var(--line);border-radius:17px;padding:12px;margin-bottom:11px;cursor:pointer;transition:transform .18s,box-shadow .18s,border-color .18s}
+  .dish-card:hover{border-color:#FFC48A;box-shadow:0 6px 18px rgba(255,122,0,.16)}
+  .dish-card:active{transform:scale(.98)}
+  .dish-img{width:76px;height:76px;flex:0 0 76px;border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:39px;box-shadow:inset 0 2px 6px rgba(255,255,255,.3);position:relative;overflow:hidden}
+  .dish-img::after{content:"";position:absolute;width:56px;height:56px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.3),transparent 70%);top:-16px;left:-10px}
+  .dish-info{flex:1;min-width:0}
+  .dish-title-row{display:flex;align-items:center;gap:6px;margin-bottom:4px;flex-wrap:wrap}
+  .dish-info h3{margin:0;font-size:17px;font-weight:800;letter-spacing:.3px}
+  .dish-sub{font-size:11px;color:#a89a8c;margin-bottom:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dish-meta{display:flex;align-items:center;gap:7px;font-size:10.5px;color:var(--muted)}
+  .dish-meta .meta-time{color:var(--primary);background:var(--warm);border-radius:7px;padding:3px 7px;font-weight:700}
+  .dish-arrow{color:#d3c6b8;font-size:22px;flex:0 0 auto}
+
+  /* ---------- 详情页（三段式） ---------- */
+  .hero{flex:0 0 auto;padding:9px 20px 14px;background:linear-gradient(135deg,#FFE9CC,#FFD7AC);border-bottom:1px solid var(--line)}
+  .hero-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+  .back-btn{border:none;background:rgba(255,255,255,.82);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;color:var(--primary);cursor:pointer;display:inline-flex;align-items:center;gap:4px;box-shadow:0 2px 6px rgba(180,110,40,.1)}
+  .back-btn:active{transform:scale(.95)}
+  .nav-text-btn{border:none;background:transparent;color:#A85C1A;font-size:11px;font-weight:600;cursor:pointer;padding:4px 6px;opacity:.8}
+  .hero-top{display:flex;gap:13px;align-items:center}
+  .hero .dish-img{width:58px;height:58px;flex:0 0 58px;border-radius:14px;font-size:30px}
+  .hero-info{flex:1;min-width:0}
+  .hero-info h1{font-size:22px;font-weight:800;margin:0 0 4px;line-height:1.2}
+  .hero-info .sub{font-size:11.5px;color:#A85C1A;line-height:1.4}
+  .meta{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap}
+  .chip{background:rgba(255,255,255,.78);border:1px solid rgba(255,122,0,.18);color:#B85A1E;font-size:10.5px;padding:3px 9px;border-radius:20px;font-weight:700}
+  .source-line{margin-top:10px;font-size:10px;color:#A85C1A;line-height:1.5;display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+  .source-line b{font-weight:800}
+
+  /* 段 1 · 材料清单 */
+  .ing-card{padding:13px 14px 8px;margin-bottom:15px}
+  .ing-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px}
+  .ing-head h2{margin:0;font-size:14px;font-weight:800}
+  .ing-head .cnt{font-size:10.5px;color:var(--muted);font-weight:700}
+  .serving{display:flex;align-items:center;gap:4px;margin-bottom:10px}
+  .serving .sl{font-size:10.5px;color:var(--muted);margin-right:4px;font-weight:600}
+  .serving button{border:1px solid var(--line);background:#fff;color:#8a7a6b;border-radius:9px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer}
+  .serving button.on{background:var(--warm);border-color:var(--primary-2);color:var(--primary)}
+  .ing-group{font-size:10px;font-weight:800;color:#B85A1E;letter-spacing:1px;margin:9px 0 5px}
+  .ing-row{display:flex;align-items:center;gap:9px;padding:7px 4px;border-bottom:1px dashed #F1E6D6;cursor:pointer}
+  .ing-row:last-child{border-bottom:none}
+  .ing-row .tick{width:18px;height:18px;flex:0 0 18px;border-radius:6px;border:1.5px solid #DCCBB5;display:flex;align-items:center;justify-content:center;font-size:11px;color:transparent}
+  .ing-row.checked .tick{background:var(--green);border-color:var(--green);color:#fff}
+  .ing-row .in{flex:1;font-size:12.5px;font-weight:600}
+  .ing-row.checked .in{text-decoration:line-through;color:#b0a191}
+  .ing-row .iq{font-size:12px;font-weight:800;color:var(--primary-2);font-variant-numeric:tabular-nums}
+  .ing-row .ino{font-size:10px;color:#b3a495}
+
+  /* 段 2 · 被遗忘的细节（唯一强调色区块） */
+  .fg-card{background:linear-gradient(150deg,var(--blue-deep),#2E90FA);border-radius:20px;padding:15px 14px 12px;margin-bottom:15px;color:#fff;box-shadow:0 14px 30px rgba(30,90,180,.25);position:relative;overflow:hidden}
+  .fg-card::after{content:"";position:absolute;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.12),transparent 70%);right:-50px;top:-60px}
+  .fg-head{position:relative;z-index:1;display:flex;align-items:center;gap:7px;margin-bottom:4px}
+  .fg-head h2{margin:0;font-size:15px;font-weight:900;letter-spacing:.3px}
+  .fg-head .fg-flag{font-size:9px;font-weight:800;color:#123E7C;background:#FFD88A;border-radius:7px;padding:2px 6px}
+  .fg-sub{position:relative;z-index:1;font-size:10.5px;color:rgba(255,255,255,.82);margin:0 0 12px;line-height:1.5}
+  .fg-item{position:relative;z-index:1;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.2);border-radius:13px;padding:10px 11px;margin-bottom:8px;cursor:pointer}
+  .fg-item:last-of-type{margin-bottom:6px}
+  .fg-t{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:5px}
+  .fg-type{font-size:9.5px;font-weight:800;color:#123E7C;background:#FFD88A;border-radius:7px;padding:2px 7px}
+  .fg-step{font-size:9.5px;font-weight:700;color:rgba(255,255,255,.8)}
+  .fg-h{font-size:13px;font-weight:800;line-height:1.4}
+  .fg-body{display:none;font-size:11px;line-height:1.6;color:rgba(255,255,255,.92);margin:7px 0 0;padding-top:7px;border-top:1px solid rgba(255,255,255,.2)}
+  .fg-item.open .fg-body{display:block}
+  .fg-foot{display:flex;justify-content:space-between;align-items:center;margin-top:3px}
+  .fg-from{font-size:9.5px;color:rgba(255,255,255,.72)}
+  .fg-vote{border:none;background:transparent;color:#FFD88A;font-size:10.5px;font-weight:800;cursor:pointer;padding:4px}
+  .fg-vote.on{color:#fff}
+  .fg-more{position:relative;z-index:1;text-align:center;font-size:10px;color:rgba(255,255,255,.75);margin-top:3px}
+  .story{margin-bottom:15px;background:#FFF8EE;border:1.5px solid #F6DFC0;border-radius:16px;padding:12px 13px;cursor:pointer}
+  .story .st-h{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:#B85A1E;margin-bottom:6px}
+  .story p{margin:0;font-size:11.5px;line-height:1.65;color:#7a6653}
+  .story .st-more{display:none;font-size:11.5px;line-height:1.65;color:#7a6653;margin-top:7px}
+  .story.open .st-more{display:block}
+
+  /* 段 3 · 做法概览（纯信息，无计时器） */
+  .ov-card{padding:12px 13px 5px;margin-bottom:6px}
+  .ov-card .list-head{display:flex;justify-content:space-between;align-items:center;margin:0 2px 9px}
+  .ov-card .list-head h2{font-size:14px;margin:0;font-weight:800}
+  .ov-card .list-head span{font-size:10.5px;color:#b3a495;font-weight:600}
+  .ov-row{display:flex;align-items:center;gap:10px;padding:8px 3px;border-bottom:1px dashed #F1E6D6}
+  .ov-row:last-child{border-bottom:none}
+  .ov-no{width:24px;height:24px;flex:0 0 24px;border-radius:50%;background:var(--warm-2);color:var(--primary);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
+  .ov-n{flex:1;font-size:12.5px;font-weight:700}
+  .ov-t{font-size:10.5px;color:var(--muted);font-weight:700}
+  .detail-cta{flex:0 0 auto;border-top:1px solid var(--line);background:#fff;padding:10px 16px 14px}
+  .btn{border:none;display:inline-flex;align-items:center;justify-content:center;gap:7px;cursor:pointer;font-weight:700;line-height:1;transition:transform .16s ease,box-shadow .2s ease,filter .2s ease,background .2s ease}
+  .btn:active{transform:scale(.97)}
+  .btn:disabled{cursor:default;opacity:.55;filter:grayscale(.4)}
+  .btn svg{width:16px;height:16px;flex:none}
+  .btn-main{width:100%;min-height:48px;border-radius:13px;font-size:15px;color:#fff;background:linear-gradient(135deg,#FF9A3D,#F25600);box-shadow:0 6px 16px rgba(242,86,0,.3),inset 0 1px 0 rgba(255,255,255,.28);letter-spacing:.5px}
+  .btn-main:hover:not(:disabled){filter:brightness(1.05)}
+  .cta-note{text-align:center;margin-top:7px}
+  .cta-note .txt-link{font-size:11px}
+
+  /* ---------- 做菜模式（唯一计时卡） ---------- */
+  .cook-hero{flex:0 0 auto;padding:9px 20px 13px;background:linear-gradient(135deg,#FFE9CC,#FFD7AC);border-bottom:1px solid var(--line)}
+  .cook-hero .hero-nav{margin-bottom:8px}
+  .cook-title{display:flex;align-items:center;justify-content:space-between}
+  .cook-title h1{margin:0;font-size:19px;font-weight:800}
+  .cook-title .cmode{font-size:10px;font-weight:800;color:#B85A1E;background:rgba(255,255,255,.8);border-radius:8px;padding:3px 8px}
+  .progress-wrap{margin-top:10px}
+  .progress-label{display:flex;justify-content:space-between;font-size:11px;color:#A85C1A;margin-bottom:6px;font-weight:600}
+  .progress-label b{color:var(--primary);font-size:13px}
+  .progress-track{height:7px;background:rgba(255,255,255,.8);border-radius:8px;overflow:hidden}
+  .progress-fill{height:100%;width:0;border-radius:8px;background:linear-gradient(90deg,var(--accent),var(--primary-2));transition:width .5s cubic-bezier(.4,0,.2,1)}
+  .focus-card{background:#fff;border:1.5px solid var(--warm-2);border-radius:24px;padding:20px 18px 16px;margin-bottom:16px;box-shadow:0 14px 34px rgba(242,86,0,.14);position:relative;overflow:hidden}
+  .focus-card::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--accent),var(--primary-2))}
+  .focus-top{display:flex;justify-content:space-between;align-items:center;margin:2px 0 6px}
+  .focus-step{font-size:11px;font-weight:800;letter-spacing:.5px;color:var(--primary);background:var(--warm);padding:4px 10px;border-radius:8px}
+  .focus-status{font-size:11px;color:var(--muted);font-weight:600}
+  .focus-title{font-size:24px;font-weight:800;margin:0 0 5px;letter-spacing:.3px}
+  .focus-desc{font-size:12px;color:#9C8B78;line-height:1.55;margin:0 0 4px}
+  .focus-ring-wrap{position:relative;width:196px;height:196px;margin:8px auto 6px}
+  .focus-ring-wrap svg{transform:rotate(-90deg)}
+  .focus-ring-bg{fill:none;stroke:#F5EADA;stroke-width:8}
+  .focus-ring-fg{fill:none;stroke:var(--primary-2);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset .4s linear,stroke .3s}
+  .focus-time{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:42px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--primary);letter-spacing:1px}
+  .focus-time small{font-size:10px;color:var(--muted);font-weight:600;margin-top:4px;letter-spacing:1px}
+  .focus-edit{text-align:center;margin:0 0 14px}
+  .focus-val{border:none;background:transparent;color:#9C8B78;font-size:12px;font-weight:600;cursor:pointer;padding:6px 12px;border-radius:8px}
+  .focus-val:hover{background:var(--warm);color:var(--primary)}
+  .focus-val b{color:var(--primary-2);font-weight:800;font-variant-numeric:tabular-nums;margin:0 2px}
+  .focus-actions{display:flex;flex-direction:column;align-items:center;gap:5px}
+  .f-main{width:100%;min-height:48px;border-radius:13px;padding:0;font-size:15px;color:#fff;background:linear-gradient(135deg,#FF9A3D,#F25600);box-shadow:0 6px 16px rgba(242,86,0,.3),inset 0 1px 0 rgba(255,255,255,.28);letter-spacing:.5px}
+  .f-main:hover:not(:disabled){filter:brightness(1.05)}
+  .f-main.paused{background:linear-gradient(135deg,#FFC93D,#FF9500)}
+  .f-done{border:none;background:transparent;color:#b3a495;font-size:11.5px;font-weight:600;cursor:pointer;padding:5px 12px}
+  .f-done:hover{color:var(--primary)}
+  .steps-section{background:#FBF7F1;border:1px solid var(--line);border-radius:18px;padding:12px 12px 5px}
+  .list-head{display:flex;justify-content:space-between;align-items:center;margin:0 2px 10px}
+  .list-head h2{font-size:13px;margin:0;color:#8a7a6b;font-weight:700}
+  .list-head h2 .h2-sub{font-size:10.5px;color:#b3a495;font-weight:500;margin-left:5px}
+  .auto-toggle{display:flex;align-items:center;gap:6px;font-size:10.5px;color:#9C8B78;cursor:pointer;user-select:none}
+  .switch{width:38px;height:22px;border-radius:20px;background:#E3D7C6;position:relative;transition:.25s}
+  .switch::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.25s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+  .auto-toggle.on .switch{background:var(--green)}
+  .auto-toggle.on .switch::after{transform:translateX(16px)}
+  .step-row{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:9px 11px;margin-bottom:7px;cursor:pointer;transition:.2s}
+  .step-row:hover{border-color:#FFC48A}
+  .step-row.active{border-color:var(--primary-2);border-width:1.5px;background:#FFF8EF;box-shadow:0 3px 12px rgba(255,122,0,.12)}
+  .step-row.done{opacity:.55}
+  .step-row.done .sr-title{text-decoration:line-through;color:#8d8073}
+  .sr-no{width:28px;height:28px;flex:0 0 28px;border-radius:50%;background:var(--warm-2);color:var(--primary);font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;transition:.2s}
+  .step-row.active .sr-no{background:var(--primary-2);color:#fff}
+  .step-row.done .sr-no{background:var(--green);color:#fff}
+  .sr-body{flex:1;min-width:0}
+  .sr-title{font-size:13.5px;font-weight:700;margin-bottom:3px;display:flex;gap:6px;align-items:center}
+  .sr-sub{font-size:11px;color:var(--muted)}
+  .sr-state{font-size:10px;font-weight:700;color:#9C8B78;background:#F5EFE6;padding:3px 8px;border-radius:10px;flex:none}
+  .step-row.active .sr-state{color:var(--primary);background:var(--warm)}
+  .step-row.done .sr-state{color:var(--green);background:var(--green-bg)}
+  .custom-badge{font-size:9px;font-weight:700;color:#2E90FA;background:#E9F3FF;border:1px solid #BBD9FF;padding:1px 6px;border-radius:8px}
+
+  /* ---------- 投稿页 ---------- */
+  .form-hero{flex:0 0 auto;padding:14px 20px 15px;background:linear-gradient(135deg,#FFE9CC,#FFD7AC);border-bottom:1px solid var(--line)}
+  .form-hero h1{margin:0 0 5px;font-size:22px;font-weight:800}
+  .form-hero p{margin:0;font-size:11.5px;color:#A85C1A;line-height:1.55;font-weight:600}
+  .dest-wrap{margin-bottom:14px}
+  .dest{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;border:1.5px solid var(--line);background:#fff;border-radius:14px;padding:11px 12px;margin-bottom:8px;cursor:pointer}
+  .dest.on{border-color:var(--primary-2);background:#FFF8EF;box-shadow:0 3px 12px rgba(255,122,0,.1)}
+  .dest .radio{width:17px;height:17px;flex:0 0 17px;border-radius:50%;border:1.5px solid #DCCBB5;margin-top:2px;position:relative}
+  .dest.on .radio{border-color:var(--primary)}
+  .dest.on .radio::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--primary)}
+  .dest b{display:block;font-size:13px;margin-bottom:3px}
+  .dest small{display:block;font-size:10.5px;color:var(--muted);line-height:1.5}
+  .fgroup{margin-bottom:11px}
+  .fgroup label{display:block;font-size:11.5px;font-weight:800;color:#6f6053;margin-bottom:5px}
+  .fgroup label i{font-style:normal;color:var(--muted);font-weight:600;font-size:10px;margin-left:4px}
+  .fgroup input,.fgroup textarea{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;font-size:12.5px;color:var(--text);background:#fff;outline:none;font-family:inherit;line-height:1.55}
+  .fgroup input:focus,.fgroup textarea:focus{border-color:var(--primary-2)}
+  .fgroup textarea{resize:none;height:62px}
+  .fgroup.hi label{color:var(--primary)}
+  .fgroup.hi textarea{background:#FFF8EE;border-color:#FFD7AC}
+  .policy{background:#F5F8FE;border:1px solid #D9E8FB;border-radius:12px;padding:10px 12px;font-size:10.5px;color:#5A7398;line-height:1.6;margin-bottom:14px}
+  .policy b{color:#1B6FD0}
+
+  /* ---------- 我的 ---------- */
+  .mine-hero{flex:0 0 auto;padding:14px 20px 15px;background:linear-gradient(135deg,#FFE9CC,#FFD7AC);border-bottom:1px solid var(--line)}
+  .mine-hero h1{margin:0 0 6px;font-size:22px;font-weight:800}
+  .legend{display:flex;gap:6px;flex-wrap:wrap}
+  .legend span{font-size:9.5px;font-weight:700;color:#A85C1A;background:rgba(255,255,255,.8);border-radius:8px;padding:4px 8px}
+  .mine-row{display:flex;gap:11px;align-items:center;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:11px 12px;margin-bottom:9px}
+  .mine-row.click{cursor:pointer}
+  .mine-row.click:hover{border-color:#FFC48A}
+  .mine-row .mi{width:42px;height:42px;flex:0 0 42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px}
+  .mine-row .mb{flex:1;min-width:0}
+  .mine-row .mb b{display:block;font-size:13px;margin-bottom:4px}
+  .mine-row .mb span{display:block;font-size:10.5px;color:var(--muted);line-height:1.4}
+  .mine-row .ms{flex:none}
+
+  /* ---------- 弹窗 ---------- */
+  .overlay{position:absolute;inset:0;z-index:50;background:rgba(43,36,29,.5);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .28s}
+  .overlay.show{opacity:1;pointer-events:auto}
+  .modal{width:300px;background:#fff;border-radius:26px;padding:28px 24px 22px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.25);transform:translateY(18px) scale(.94);transition:transform .3s cubic-bezier(.2,1.3,.4,1)}
+  .overlay.show .modal{transform:translateY(0) scale(1)}
+  .modal-icon{font-size:56px;line-height:1;animation:pop .6s ease}
+  @keyframes pop{0%{transform:scale(.4) rotate(-15deg)}60%{transform:scale(1.15) rotate(6deg)}100%{transform:scale(1) rotate(0)}}
+  .modal h3{font-size:20px;margin:12px 0 6px}
+  .modal p{font-size:13px;color:var(--muted);line-height:1.6;margin:0 0 20px}
+  .modal .btn-main{width:100%;padding:13px;font-size:14px;line-height:1.4}
+  .modal .btn-sub{width:100%;margin-top:9px;padding:11px;border:none;background:transparent;color:var(--muted);font-size:13px;cursor:pointer}
+  .time-modal{width:290px}
+  .field-row{display:flex;gap:10px;margin:16px 0}
+  .field{flex:1}
+  .field label{display:block;font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600}
+  .field input{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:11px;text-align:center;font-size:20px;font-weight:800;color:var(--primary);background:#FFF7EC;outline:none}
+  .field input:focus{border-color:var(--primary-2)}
+  .quick-row{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin-bottom:18px}
+  .quick-row button{border:1px solid var(--line);background:var(--warm);color:#8a6a52;border-radius:20px;padding:6px 12px;font-size:11.5px;font-weight:700;cursor:pointer}
+  .quick-row button:active{transform:scale(.94);background:var(--warm-2)}
+  .done-overlay .modal-icon{animation:pop .6s ease,float 2.5s ease-in-out .6s infinite}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+  .toast{position:absolute;left:50%;bottom:96px;transform:translateX(-50%) translateY(10px);background:rgba(43,36,29,.9);color:#fff;padding:9px 18px;border-radius:20px;font-size:12.5px;z-index:60;opacity:0;pointer-events:none;transition:.25s;white-space:nowrap;max-width:340px;text-align:center}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="stage-hint">🍳 <b>记忆里的美食 · 原型 v1.2</b> — 三段式菜谱详情（材料 → 被遗忘的细节 → 做法）· 独立做菜模式仍只用一个计时器 · 三层内容域：官方收录 / 我的私藏 / 投稿</div>
+
+<div class="phone">
+  <div class="island"></div>
+  <div class="statusbar"><span>9:41</span><span class="icons">📶 🔋 100%</span></div>
+
+  <div class="screens">
+
+    <!-- ============ 发现 ============ -->
+    <div class="view hidden" id="viewDiscover">
+      <div class="dc-hero">
+        <div class="kicker">那些没写进菜谱的事</div>
+        <h1>记忆里的<em>美食</em>。</h1>
+        <p>家庭菜谱里最要紧的那一步，往往没人写下来。<br>我们把它一条条找回来。</p>
+        <div class="stat-row">
+          <div class="stat"><b id="dcDishes">12</b><span>道官方收录</span></div>
+          <div class="stat"><b id="dcDetails">36</b><span>条被遗忘的细节</span></div>
+          <div class="stat"><b id="dcMine">2</b><span>条我的私藏</span></div>
+        </div>
+      </div>
+      <div class="scroll">
+        <div class="sec-title" style="margin-top:14px"><h2>记忆专题</h2><span>点开看看别人家里多做的那一步</span></div>
+        <div class="topic-row">
+          <button class="topic t1" data-topic="火候">火候里的分寸<small>早 5 秒和晚 5 秒，是两道菜</small></button>
+          <button class="topic t2" data-topic="先后顺序">先后顺序<small>不是加什么，是先加什么</small></button>
+          <button class="topic t3" data-topic="家里的小动作">家里的小动作<small>说不出道理，但一直这么做</small></button>
+        </div>
+        <div class="sec-title" style="margin-top:18px"><h2>被遗忘的细节 · 精选</h2><span>来自已审核发布的菜谱</span></div>
+        <div id="pickList"></div>
+        <div class="sec-title" style="margin-top:18px"><h2>最近收录</h2><span>官方公开 · 全体可见</span></div>
+        <div id="recentList"></div>
+      </div>
+    </div>
+
+    <!-- ============ 搜菜谱 ============ -->
+    <div class="view" id="viewSearch">
+      <div class="list-hero">
+        <h1>找一道菜<span class="hero-dot">。</span></h1>
+        <p>12 道官方收录 · 支持按菜名与材料反查</p>
+      </div>
+      <div class="search-row">
+        <div class="search-box">
+          <span class="mag">🔍</span>
+          <input type="text" id="searchInput" placeholder="搜菜名或材料，如 五花肉 / 豆腐" autocomplete="off" />
+          <button class="clear" id="clearSearch">✕</button>
+        </div>
+      </div>
+      <div class="domain-row" id="domainRow">
+        <button class="dom on" data-dom="all">全部</button>
+        <button class="dom" data-dom="official">官方收录</button>
+        <button class="dom" data-dom="mine">我的私藏</button>
+      </div>
+      <div class="cat-row" id="catRow"></div>
+      <div class="dish-scroll">
+        <div class="result-tip" id="resultTip"></div>
+        <div id="dishList"></div>
+      </div>
+    </div>
+
+    <!-- ============ 菜谱详情（三段式） ============ -->
+    <div class="view hidden" id="viewDetail">
+      <div class="hero">
+        <div class="hero-nav">
+          <button class="back-btn" id="backBtn">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+            返回
+          </button>
+          <button class="nav-text-btn" id="detailDomainTag"></button>
+        </div>
+        <div class="hero-top">
+          <div class="dish-img" id="detailImg">🥘</div>
+          <div class="hero-info">
+            <h1 id="detailName">红烧肉</h1>
+            <div class="sub" id="detailDesc"></div>
+            <div class="meta" id="detailMeta"></div>
+          </div>
+        </div>
+        <div class="source-line" id="detailSource"></div>
+      </div>
+      <div class="scroll" id="detailScroll">
+        <!-- 段 1 -->
+        <div class="sec-title" style="margin-top:14px"><h2>① 备料</h2><span>先看清要买什么</span></div>
+        <div class="card ing-card">
+          <div class="ing-head"><h2>材料清单</h2><span class="cnt" id="ingCnt"></span></div>
+          <div class="serving" id="servingRow"></div>
+          <div id="ingList"></div>
+        </div>
+        <!-- 段 2 -->
+        <div class="sec-title"><h2>② 那些没写进菜谱的事</h2><span>本产品唯一强调区块</span></div>
+        <div class="fg-card">
+          <div class="fg-head"><h2>被遗忘的细节</h2><span class="fg-flag" id="fgFlag">0 条</span></div>
+          <p class="fg-sub">影响成败、却常被菜谱省略的关键动作 · 每条都带类型、来由与出处</p>
+          <div id="fgList"></div>
+          <div class="fg-more">点击任意一条，展开看「为什么」</div>
+        </div>
+        <div class="story" id="storyCard">
+          <div class="st-h">📖 记忆故事 <span class="muted" style="font-weight:600;font-size:10px">点击展开</span></div>
+          <p id="storyText"></p>
+          <div class="st-more" id="storyMore"></div>
+        </div>
+        <!-- 段 3 -->
+        <div class="sec-title"><h2>③ 做法</h2><span>步骤概览 · 这里不放计时器</span></div>
+        <div class="card ov-card">
+          <div class="list-head"><h2>步骤一览</h2><span id="ovTotal"></span></div>
+          <div id="ovList"></div>
+        </div>
+      </div>
+      <div class="detail-cta">
+        <button class="btn btn-main" id="startCookBtn">开始做这道菜 →</button>
+        <div class="cta-note"><button class="txt-link" id="saveMineBtn">存进我的私藏 · 仅自己可见 ›</button></div>
+      </div>
+    </div>
+
+    <!-- ============ 做菜模式 ============ -->
+    <div class="view hidden" id="viewCook">
+      <div class="cook-hero">
+        <div class="hero-nav">
+          <button class="back-btn" id="cookBackBtn">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+            菜谱详情
+          </button>
+          <button class="nav-text-btn" id="resetAll">重置全部</button>
+        </div>
+        <div class="cook-title"><h1 id="cookName">红烧肉</h1><span class="cmode">做菜模式 · 一次只走一步</span></div>
+        <div class="progress-wrap">
+          <div class="progress-label"><span>烹饪进度</span><span><b id="doneCount">0</b> / <span id="totalSteps">8</span> 步完成</span></div>
+          <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        </div>
+      </div>
+      <div class="scroll" id="scroll">
+        <div class="focus-card">
+          <div class="focus-top"><span class="focus-step" id="focusStep">第 1 / 8 步</span><span class="focus-status" id="focusStatus">准备就绪</span></div>
+          <div class="focus-title" id="focusTitle">准备食材</div>
+          <div class="focus-desc" id="focusDesc"></div>
+          <div class="focus-ring-wrap">
+            <svg width="196" height="196" viewBox="0 0 120 120">
+              <circle class="focus-ring-bg" cx="60" cy="60" r="52"></circle>
+              <circle class="focus-ring-fg" id="focusRing" cx="60" cy="60" r="52" stroke-dasharray="327" stroke-dashoffset="0"></circle>
+            </svg>
+            <div class="focus-time" id="focusTime">10:00<small>剩余时间</small></div>
+          </div>
+          <div class="focus-edit"><span class="focus-val" id="fVal" title="点击调整本步时长">本步时长 <b>10:00</b> · 调整 ›</span></div>
+          <div class="focus-actions">
+            <button class="btn f-main" id="fToggle">
+              <svg id="fToggleIcon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+              <span id="fToggleLabel">开始计时</span>
+            </button>
+            <button class="f-done" id="fDone">跳过本步 ›</button>
+          </div>
+        </div>
+        <div class="steps-section">
+          <div class="list-head">
+            <h2>全部步骤<span class="h2-sub">点按可切换当前步</span></h2>
+            <div class="auto-toggle on" id="autoToggle"><span>到点自动下一步</span><div class="switch"></div></div>
+          </div>
+          <div id="stepList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============ 投稿 ============ -->
+    <div class="view hidden" id="viewSubmit">
+      <div class="form-hero">
+        <h1>写下你家的做法</h1>
+        <p>尤其是那一步——菜谱上从来没写、但你家一直这么做的。</p>
+      </div>
+      <div class="scroll">
+        <div class="sec-title" style="margin-top:14px"><h2>这条记录去哪儿</h2><span>决定要不要审核</span></div>
+        <div class="dest-wrap" id="destWrap">
+          <button class="dest on" data-dest="public">
+            <span class="radio"></span>
+            <span><b>贡献到公开菜谱</b><small>进入官方公开库，机器内容安全 + 内部审核后收录，收录后全体可见并保留署名</small></span>
+          </button>
+          <button class="dest" data-dest="private">
+            <span class="radio"></span>
+            <span><b>只存进我的私藏</b><small>仅本人可见，无需审核、不带审核状态，默认不提供对外分享</small></span>
+          </button>
+        </div>
+        <div class="fgroup"><label>菜名</label><input id="subName" type="text" placeholder="如 奶奶的糖水蛋" /></div>
+        <div class="fgroup"><label>材料 <i>用逗号或换行分隔</i></label><textarea id="subIng" placeholder="鸡蛋 2 个，冰糖 20g，姜 2 片"></textarea></div>
+        <div class="fgroup"><label>步骤 <i>每行一步，默认 5 分钟</i></label><textarea id="subSteps" placeholder="冷水下鸡蛋&#10;小火煮 8 分钟&#10;加冰糖关火焖一会儿"></textarea></div>
+        <div class="fgroup hi"><label>★ 家里多做的那一步</label><textarea id="subDetail" placeholder="例：关火后别急着捞，焖 3 分钟蛋黄才不噎人"></textarea></div>
+        <div class="fgroup"><label>记忆故事 <i>选填</i></label><textarea id="subStory" placeholder="谁做的？什么时候吃到的？"></textarea></div>
+        <div class="policy" id="policyBox"></div>
+        <button class="btn btn-main" id="subSubmit" style="margin-bottom:8px">提交这条记录</button>
+        <div class="cta-note"><button class="txt-link" id="subClear">清空表单 ›</button></div>
+      </div>
+    </div>
+
+    <!-- ============ 我的 ============ -->
+    <div class="view hidden" id="viewMine">
+      <div class="mine-hero">
+        <h1>我的</h1>
+        <div class="legend">
+          <span>A 官方公开 · 内部审核后发布</span>
+          <span>B 个人私有 · 仅本人 · 免审核</span>
+          <span>C 投稿 · 已收到 / 已收录</span>
+        </div>
+      </div>
+      <div class="scroll">
+        <div class="sec-title" style="margin-top:14px"><h2>B · 我的私藏</h2><span id="mineCnt"></span></div>
+        <div id="mineList"></div>
+        <div class="sec-title" style="margin-top:18px"><h2>C · 我的投稿</h2><span>只显示已收到 / 已收录两态</span></div>
+        <div id="submitList"></div>
+        <div class="policy" style="margin-top:16px">审核由平台内部完成，端上不提供审核入口、不展示审核状态机；私藏内容仅自己可见，不设对外分享入口。</div>
+      </div>
+    </div>
+
+  </div><!-- /screens -->
+
+  <div class="tabbar" id="tabbar">
+    <button class="tab on" data-tab="discover"><span class="ti">🏠</span>发现</button>
+    <button class="tab" data-tab="search"><span class="ti">🔍</span>搜菜谱</button>
+    <button class="tab" data-tab="submit"><span class="ti">✍️</span>投稿</button>
+    <button class="tab" data-tab="mine"><span class="ti">👤</span>我的</button>
+  </div>
+
+  <!-- 到点提醒 -->
+  <div class="overlay" id="timeupOverlay">
+    <div class="modal">
+      <div class="modal-icon">⏰</div>
+      <h3>时间到啦！</h3>
+      <p id="timeupText"></p>
+      <button class="btn btn-main" id="nextStepBtn">完成，进入下一步 →</button>
+      <button class="btn-sub" id="stayBtn">先等一下</button>
+    </div>
+  </div>
+
+  <!-- 时间设置 -->
+  <div class="overlay" id="timeOverlay">
+    <div class="modal time-modal">
+      <div class="modal-icon" style="font-size:42px">⚙️</div>
+      <h3 style="font-size:18px">设置本步时长</h3>
+      <p style="margin-bottom:0">输入分/秒，或选快捷时间</p>
+      <div class="field-row">
+        <div class="field"><label>分钟</label><input type="number" id="minInput" min="0" max="180" value="10" /></div>
+        <div class="field"><label>秒</label><input type="number" id="secInput" min="0" max="59" value="0" /></div>
+      </div>
+      <div class="quick-row" id="quickRow">
+        <button data-min="1">+1分</button><button data-min="5">5分钟</button><button data-min="10">10分钟</button><button data-min="30">30分钟</button><button data-min="45">45分钟</button>
+      </div>
+      <button class="btn btn-main" id="saveTimeBtn">保存设置</button>
+      <button class="btn-sub" id="resetDefaultBtn">恢复默认时长</button>
+      <button class="btn-sub" id="resetStepBtn" style="margin-top:0">重置本步计时</button>
+    </div>
+  </div>
+
+  <!-- 全部完成 -->
+  <div class="overlay done-overlay" id="doneOverlay">
+    <div class="modal">
+      <div class="modal-icon">🎉</div>
+      <h3 id="doneTitle">完成啦！</h3>
+      <p id="doneText"></p>
+      <button class="btn btn-main" id="cookAgainBtn">再做一次</button>
+      <button class="btn-sub" id="backListBtn">返回这道菜</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============================================================
+     菜谱数据：A 域官方公开（12 道 / 58 步，v1~v7 沿用）
+     每道菜补齐 ing（材料）/ fg（被遗忘的细节）/ story / src
+     ============================================================ */
+  var DISHES=[
+    {id:"hr",name:"红烧肉",icon:"🥘",g:["#d8442f","#a8271b"],desc:"肥而不腻·入口即化",diff:"中等",cats:["家常","炖煮"],tags:["经典","下饭"],domain:"official",
+     ing:{"主料":[["五花肉","500","g"],["冰糖","30","g"]],"辅料":[["姜","4","片"],["葱","2","段"],["八角","2","颗"],["桂皮","1","小块"]],"调味":[["生抽","2","勺"],["老抽","1","勺"],["料酒","1","勺"],["开水","适量",""]]},
+     fg:[{t:"焯水",h:"冷水下锅，别用开水",d:"冷水下锅才能让血水慢慢逼出来；开水下锅表面蛋白质瞬间凝固，腥味就锁在里面了。焯完捞出来要用温水冲洗，别用冷水激。",from:"家人口述 · 王阿姨",step:2},
+         {t:"火候",h:"糖色炒到枣红就下肉，晚 5 秒发苦",d:"糖液从大泡转成细密小泡、颜色刚变枣红时立刻下肉翻炒。全程小火，宁可慢也别急。",from:"编辑复核 · 三次试做",step:3},
+         {t:"水量",h:"炖煮加开水，一次加足",d:"热锅加冷水肉会紧缩变柴，汤也会浑。中途尽量不揭盖、不加水。",from:"样板录入",step:5},
+         {t:"静置",h:"关火后焖 10 分钟再开盖",d:"收完汁别急着装盘，关火焖一会儿，肉更透、味道更匀，这是最常被省掉的一步。",from:"家人口述",step:7}],
+     story:"外婆总在周末中午炖一锅，说糖色要炒到「像酱油、又比酱油亮」才对。她不用计时器，只听锅里泡泡的声音。",
+     src:"家人口述 + 编辑复核 · 已审核发布",
+     steps:[["准备食材","五花肉 500g 切 2cm 见方块，姜切片葱切段，备八角桂皮冰糖。",600],["焯水去腥","冷水下锅加姜片料酒，大火煮开撇浮沫，煮 2 分钟捞出洗净。",480],["炒糖色","锅中少油下冰糖，小火炒至融化呈枣红色，下肉块翻炒裹匀上色。",360],["煸炒出香","加姜片八角桂皮炒香，翻炒至肉块表面微黄、逼出部分油脂。",300],["加料炖煮","加生抽 2 勺老抽 1 勺料酒 1 勺，倒入开水没过肉，大火烧开。",300],["小火慢炖","转小火加盖慢炖，直到肉质软烂、筷子能轻松插入。",1800],["大火收汁","开大火收汁，不停翻动让汤汁浓稠挂在肉上，收至油亮红润。",600],["出锅装盘","拣出香料撒葱花，装盘上桌趁热享用。",120]]},
+    {id:"fq",name:"番茄炒蛋",icon:"🍅",g:["#f2994a","#e3503b"],desc:"酸甜开胃·5分钟快手",diff:"简单",cats:["家常","快手"],tags:["快手","素菜"],domain:"official",
+     ing:{"主料":[["番茄","2","个"],["鸡蛋","3","个"]],"辅料":[["葱","1","根"]],"调味":[["盐","3","g"],["糖","5","g"],["食用油","2","勺"]]},
+     fg:[{t:"先后顺序",h:"鸡蛋先炒盛出，最后才回锅",d:"一起炒蛋会老、番茄会出水。分开炒再合，蛋是嫩的、番茄是成块的。",from:"样板录入",step:2},
+         {t:"锅气",h:"番茄要中火炒到「出沙」",d:"看到番茄边缘起沙、汤汁变浓再调味，生番茄的青味才没有。别急着加盐，盐一早下会大量出水。",from:"编辑复核",step:3},
+         {t:"家里的小动作",h:"起锅前撒一点点糖",d:"不是为了甜，是压掉番茄的酸尖，让味道圆一点。很多家常菜谱不写这一下。",from:"家人口述",step:4}],
+     story:"大学第一次自己做饭，电话里妈妈只多说了一句：「别忘了那点糖。」",
+     src:"样板录入 + 编辑复核 · 已审核发布",
+     steps:[["准备食材","番茄 2 个切块，鸡蛋 3 个打散，葱切花备用。",180],["炒鸡蛋","热油下蛋液，凝固后快速划散盛出。",180],["炒番茄","锅中留底油下番茄，中火翻炒出沙汁。",240],["合炒调味","倒回鸡蛋，加盐糖少许翻炒均匀。",120],["出锅","撒葱花装盘。",60]]},
+    {id:"tp",name:"糖醋排骨",icon:"🍖",g:["#e17b44","#c0562b"],desc:"酸甜酥脆·孩子最爱",diff:"中等",cats:["家常","炖煮"],tags:["经典","糖醋"],domain:"official",
+     ing:{"主料":[["肋排","500","g"]],"辅料":[["姜","3","片"],["白芝麻","少许",""]],"调味":[["料酒","1","勺"],["生抽","2","勺"],["白糖","3","勺"],["香醋","4","勺"],["清水","5","勺"]]},
+     fg:[{t:"先后顺序",h:"12345 是料酒、生抽、糖、醋、水，别记反",d:"顺口溜里的顺序就是下料顺序。醋靠后放才不会在高温里挥发到只剩酸。",from:"家人口述",step:3},
+         {t:"焯水",h:"焯完擦干再煎",d:"带水下锅会溅油，也煎不出金黄的壳。厨房纸吸一下，差别很大。",from:"样板录入",step:2},
+         {t:"火候",h:"收汁最后两分钟别离开",d:"糖醋汁从「挂勺」到「糊锅」只有一两分钟，要不停翻动，看到油亮就关火。",from:"编辑复核",step:5}],
+     story:"爸爸把「12345」写在冰箱贴背面，二十年了没换过。",
+     src:"家人口述 + 编辑复核 · 已审核发布",
+     steps:[["排骨焯水","排骨冷水下锅加姜料酒，煮开撇沫捞出洗净。",420],["煎排骨","少油下排骨煎至两面金黄。",360],["调糖醋汁","料酒1生抽2糖3醋4清水5，按比例调匀。",180],["焖煮入味","倒入糖醋汁没过排骨，大火烧开转小火焖煮。",900],["大火收汁","收汁至浓稠包裹排骨，撒白芝麻。",300]]},
+    {id:"gb",name:"宫保鸡丁",icon:"🍗",g:["#d98c3f","#b5651d"],desc:"麻辣鲜香·下饭神器",diff:"中等",cats:["家常","快手"],tags:["川菜","下饭"],domain:"official",
+     ing:{"主料":[["鸡胸肉","300","g"],["花生米","80","g"]],"辅料":[["黄瓜","0.5","根"],["胡萝卜","0.5","根"],["干辣椒","6","个"],["花椒","1","小撮"],["葱","2","段"]],"调味":[["料酒","1","勺"],["生抽","2","勺"],["香醋","2","勺"],["糖","1","勺"],["淀粉","1","勺"]]},
+     fg:[{t:"静置",h:"鸡丁腌够 10 分钟，别省",d:"淀粉抓匀后静置，下锅才不脱浆、不发柴。赶时间至少也要 5 分钟。",from:"样板录入",step:2},
+         {t:"火候",h:"花生米冷油下锅、小火，最后才拌",d:"热油下花生外焦里生；冷油缓慢升温才酥得透。提前拌进菜里会回软。",from:"编辑复核",step:3},
+         {t:"先后顺序",h:"碗汁提前调好，一次淋入",d:"炒到一半再逐个加调料，鸡丁就老了。碗汁一次性淋入，十几秒出锅。",from:"家人口述",step:5}],
+     story:"川菜馆师傅说，宫保鸡丁的输赢全在「提前调好的那一碗」。",
+     src:"样板录入 + 家人口述 · 已审核发布",
+     steps:[["切配食材","鸡胸肉切丁，黄瓜胡萝卜切丁，葱切段。",300],["腌制鸡丁","鸡丁加料酒生抽淀粉抓匀腌 10 分钟。",600],["炒花生米","冷油下花生米小火炸香盛出。",240],["爆炒鸡丁","热油下鸡丁滑炒至变色盛出。",180],["调味合炒","爆香花椒干辣椒，下鸡丁蔬菜，倒入碗汁翻炒，加花生米出锅。",300]]},
+    {id:"mp",name:"麻婆豆腐",icon:"🍲",g:["#cf5b3a","#a83f22"],desc:"麻辣嫩滑·川味经典",diff:"简单",cats:["家常","快手","素菜"],tags:["川菜","下饭"],domain:"official",
+     ing:{"主料":[["嫩豆腐","1","盒"]],"辅料":[["猪肉末","100","g"],["蒜苗","1","根"],["姜蒜末","少许",""]],"调味":[["豆瓣酱","1.5","勺"],["花椒粉","1","小勺"],["水淀粉","3","勺"],["盐","少许",""]]},
+     fg:[{t:"焯水",h:"淡盐水焯 1 分钟",d:"去豆腥也让豆腐定型，后面怎么推都不碎。水里盐别多，一小撮就够。",from:"样板录入",step:2},
+         {t:"先后顺序",h:"勾芡分两次",d:"一次勾芡容易出水；分两次、每次薄薄一层，才亮而不糊。第二次要在关火前沿锅边淋。",from:"编辑复核",step:5},
+         {t:"锅气",h:"推豆腐用锅铲背，别翻炒",d:"翻勺就碎。轻推让芡汁均匀裹上，动作越慢越好。",from:"家人口述",step:4}],
+     story:"奶奶说豆腐要「哄着做」，急不得。",
+     src:"样板录入 + 家人口述 · 已审核发布",
+     steps:[["切配食材","嫩豆腐切方块，肉末备好，蒜苗切碎。",240],["豆腐焯水","盐水焯豆腐 1 分钟去豆腥、不易碎。",120],["炒肉末","热油下肉末炒散，加豆瓣酱炒出红油。",240],["烧豆腐","加水没过豆腐，轻推烧开入味。",300],["勾芡出锅","分次水淀粉勾芡，撒花椒粉蒜苗出锅。",120]]},
+    {id:"kl",name:"可乐鸡翅",icon:"🍗",g:["#b5651d","#8b4513"],desc:"甜香软烂·零失败",diff:"简单",cats:["家常","快手"],tags:["快手","孩子爱"],domain:"official",
+     ing:{"主料":[["鸡中翅","8","只"]],"辅料":[["姜","3","片"],["白芝麻","少许",""]],"调味":[["可乐","1","罐"],["生抽","2","勺"],["料酒","1","勺"]]},
+     fg:[{t:"去腥",h:"两面划刀，再冷水下锅焯",d:"划刀是为入味，冷水下锅是为去血沫，两步顺序反了都不对。",from:"样板录入",step:1},
+         {t:"火候",h:"收汁开盖大火、勤翻",d:"可乐糖分高，盖着收会溢锅且上色不匀，最后几分钟要一直看着。",from:"编辑复核",step:4},
+         {t:"家里的小动作",h:"留两勺可乐最后补",d:"收得太干时补一点可乐，比加水香很多，也不会把味道冲淡。",from:"家人口述",step:4}],
+     story:"很多人的第一道菜，因为「几乎不会失败」。",
+     src:"样板录入 + 编辑复核 · 已审核发布",
+     steps:[["处理鸡翅","鸡翅两面划刀，冷水下锅焯水去血沫捞出。",420],["煎鸡翅","少油煎至两面金黄。",300],["倒可乐焖煮","倒入可乐没过鸡翅，加生抽姜片，大火烧开转中火。",900],["大火收汁","收汁至浓稠油亮，撒芝麻出锅。",300]]},
+    {id:"qz",name:"清蒸鲈鱼",icon:"🐟",g:["#6aa9c9","#3f7fa8"],desc:"鲜嫩多汁·原汁原味",diff:"中等",cats:["家常","蒸菜"],tags:["清淡","宴客"],domain:"official",
+     ing:{"主料":[["鲈鱼","1","条"]],"辅料":[["姜","5","片"],["葱","2","根"]],"调味":[["料酒","1","勺"],["盐","2","g"],["蒸鱼豉油","2","勺"],["食用油","2","勺"]]},
+     fg:[{t:"火候",h:"水开后才上锅，计时从这一刻起",d:"冷水上锅等于慢火蒸，肉会散。8 分钟关火，再虚蒸 2 分钟，斤两每多半斤加 2 分钟。",from:"编辑复核 · 三次试做",step:3},
+         {t:"去腥",h:"蒸完先倒掉盘里的腥水，再淋汁",d:"最常被漏掉的一步。蒸出来的鱼汤很腥，直接淋豉油整条鱼都毁了。",from:"家人口述",step:4},
+         {t:"先后顺序",h:"先淋豉油，再浇热油",d:"热油是「激香」葱丝和豉油，反过来就只剩油腻没有香气。",from:"样板录入",step:4}],
+     story:"过年桌上的第一条鱼，爷爷总负责最后那一勺热油。",
+     src:"家人口述 + 编辑复核 · 已审核发布",
+     steps:[["处理鲈鱼","鲈鱼收拾干净，两面划几刀，姜葱塞鱼腹。",360],["腌制去腥","抹料酒少许盐，铺姜片腌 10 分钟。",600],["上锅蒸","水开后上锅大火蒸 8 分钟，关火虚蒸 2 分钟。",600],["淋汁激香","倒掉盘中腥水，铺葱丝淋蒸鱼豉油，浇热油激香。",180]]},
+    {id:"hg",name:"回锅肉",icon:"🥓",g:["#cc6b3f","#a04b28"],desc:"香辣下饭·川菜之王",diff:"中等",cats:["家常","快手"],tags:["川菜","下饭"],domain:"official",
+     ing:{"主料":[["五花肉","400","g"]],"辅料":[["青椒","2","个"],["蒜苗","2","根"],["姜","3","片"],["葱","1","段"]],"调味":[["豆瓣酱","1.5","勺"],["甜面酱","0.5","勺"],["料酒","1","勺"]]},
+     fg:[{t:"静置",h:"煮好的肉放凉再切薄片",d:"热肉切不成片，也煸不出灯盏窝。放凉或过一遍凉水，切到能透光最好。",from:"样板录入",step:2},
+         {t:"火候",h:"煸到肉片卷曲「起窝」才下酱",d:"灯盏窝是回锅肉的判据，没到这步就下豆瓣酱会出水、变成煮肉。",from:"编辑复核",step:3},
+         {t:"先后顺序",h:"蒜苗最后下，断生就出锅",d:"蒜苗炒久发黄发苦，那股清香全没了。关火前十几秒下就够。",from:"家人口述",step:5}],
+     story:"成都的舅公说，判断一家馆子先看回锅肉有没有「窝」。",
+     src:"样板录入 + 家人口述 · 已审核发布",
+     steps:[["煮肉","五花肉冷水下锅加姜葱料酒，煮至筷子能插入。",900],["切薄片","肉放凉切薄片，青椒蒜苗切段。",240],["煸炒出油","少油下肉片煸至卷曲出油、呈灯盏窝。",300],["炒香豆瓣","加豆瓣酱甜面酱炒出红油。",120],["合炒出锅","下青椒蒜苗断生出锅。",120]]},
+    {id:"yx",name:"鱼香肉丝",icon:"🥢",g:["#c97b4a","#9c4f2c"],desc:"鱼香味浓·酸甜辣鲜",diff:"中等",cats:["家常","快手"],tags:["川菜","下饭"],domain:"official",
+     ing:{"主料":[["猪里脊","250","g"]],"辅料":[["木耳","1","小把"],["胡萝卜","0.5","根"],["冬笋","0.5","根"],["泡椒","2","勺"],["姜蒜末","少许",""]],"调味":[["糖","2","勺"],["香醋","2","勺"],["生抽","1","勺"],["淀粉","1","勺"]]},
+     fg:[{t:"先后顺序",h:"鱼香汁提前调好，比例是魂",d:"下锅后现调必定手忙脚乱，肉丝就老了。糖醋比例按自家口味定，但一定要先调。",from:"编辑复核",step:2},
+         {t:"静置",h:"肉丝上浆后封一点油",d:"抓匀淀粉后再淋几滴油拌开，下锅不粘连、根根分明。",from:"家人口述",step:1},
+         {t:"锅气",h:"汁要大火一次收亮",d:"小火慢煨会让配菜出水，鱼香变鱼汤。全程大火、动作快。",from:"样板录入",step:5}],
+     story:"「鱼香」里没有鱼，妈妈解释了很多年我还是不信。",
+     src:"样板录入 + 编辑复核 · 已审核发布",
+     steps:[["切配腌肉","里脊肉切丝加料酒淀粉抓匀，木耳胡萝卜笋切丝。",360],["调鱼香汁","糖醋生抽淀粉水调匀，比例是关键。",180],["滑炒肉丝","热油下肉丝滑炒至变色盛出。",180],["炒配菜","爆香泡椒姜蒜，下配菜翻炒断生。",180],["合炒收汁","倒回肉丝淋鱼香汁，大火收汁撒葱花。",180]]},
+    {id:"sl",name:"蒜蓉西兰花",icon:"🥦",g:["#7cb342","#4e8b2a"],desc:"清爽脆嫩·减脂首选",diff:"简单",cats:["素菜","快手"],tags:["清淡","减脂"],domain:"official",
+     ing:{"主料":[["西兰花","1","颗"]],"辅料":[["蒜","5","瓣"]],"调味":[["盐","3","g"],["食用油","1","勺"]]},
+     fg:[{t:"火候",h:"焯水加盐和几滴油，1 分钟就捞",d:"加盐油是保翠绿，捞出过凉是立刻停熟，不然端上桌就黄了。",from:"样板录入",step:2},
+         {t:"先后顺序",h:"蒜末分两次放",d:"一半爆香打底，一半起锅前放，才有那股冲鼻的生蒜香。一次全放只剩熟蒜味。",from:"编辑复核",step:3},
+         {t:"锅气",h:"全程大火，别盖盖",d:"盖盖焖出来的西兰花是黄色的，口感也软塌。",from:"家人口述",step:4}],
+     story:"健身那几年，唯一被夸好吃的一盘「草」。",
+     src:"样板录入 + 编辑复核 · 已审核发布",
+     steps:[["准备食材","西兰花掰小朵洗净，蒜切末。",180],["焯水","水开加盐油，焯西兰花 1 分钟捞出过凉。",120],["炒蒜蓉","热油爆香一半蒜末。",60],["翻炒调味","下西兰花大火翻炒，加盐和剩余蒜末出锅。",120]]},
+    {id:"pz",name:"皮蛋瘦肉粥",icon:"🥣",g:["#d4a373","#b5834a"],desc:"绵滑暖胃·早餐佳品",diff:"简单",cats:["汤粥"],tags:["早餐","清淡"],domain:"official",
+     ing:{"主料":[["大米","1","杯"],["皮蛋","2","个"]],"辅料":[["瘦肉","150","g"],["姜","1","块"],["葱","1","根"]],"调味":[["盐","3","g"],["白胡椒粉","少许",""],["淀粉","1","勺"]]},
+     fg:[{t:"水量",h:"米先冻一小时或提前泡",d:"米粒开花快，粥底才绵。这是粥铺不写在菜谱上的那一步。",from:"家人口述",step:1},
+         {t:"先后顺序",h:"皮蛋分两次下",d:"一半早下煮化在粥里出味，一半晚下保留颗粒和口感。",from:"编辑复核",step:3},
+         {t:"静置",h:"关火焖 5 分钟再吃",d:"米油会浮上来，比一直搅动更滑，也不会糊底。",from:"样板录入",step:4}],
+     story:"生病时的一碗粥，姜丝切得比头发还细。",
+     src:"家人口述 + 编辑复核 · 已审核发布",
+     steps:[["熬粥底","大米淘洗加水，大火烧开转小火熬煮。",1800],["切配食材","皮蛋切丁，瘦肉切丝加淀粉抓匀，姜切丝。",300],["下料","粥底粘稠后下皮蛋瘦肉丝，煮至肉变色。",420],["调味出锅","加盐胡椒粉葱花搅匀出锅。",120]]},
+    {id:"sz",name:"水煮牛肉",icon:"🌶️",g:["#d64541","#a52a2a"],desc:"麻辣滚烫·豪横过瘾",diff:"中等",cats:["家常"],tags:["川菜","重口"],domain:"official",
+     ing:{"主料":[["牛里脊","300","g"]],"辅料":[["豆芽","200","g"],["蛋清","1","个"],["干辣椒","8","个"],["花椒","1","小撮"],["蒜末","少许",""],["香菜","1","根"]],"调味":[["豆瓣酱","2","勺"],["料酒","1","勺"],["生抽","1","勺"],["淀粉","1","勺"]]},
+     fg:[{t:"静置",h:"牛肉腌满 15 分钟，加蛋清和淀粉",d:"逆纹切薄片 + 上浆，是嫩的唯一办法，和后面火候关系反而没那么大。",from:"样板录入",step:1},
+         {t:"去腥",h:"牛肉逐片下锅，别一坨倒",d:"一坨下锅温度骤降，肉会煮老还会脱浆浑汤。逐片铺进去，十秒就熟。",from:"编辑复核",step:3},
+         {t:"锅气",h:"最后那勺热油要够烫",d:"油温不够激不出辣椒和花椒的香，只剩辣没有香。看到冒青烟再浇。",from:"家人口述",step:4}],
+     story:"第一次做给朋友吃，被问「这真的是家里做的？」",
+     src:"样板录入 + 家人口述 · 已审核发布",
+     steps:[["切配腌肉","牛里脊切薄片，加料酒生抽蛋清淀粉抓匀腌 15 分钟。",900],["炒底料","爆香豆瓣酱花椒干辣椒，加高汤烧开。",300],["涮牛肉","下豆芽配菜烫熟垫底，牛肉片逐片下锅烫熟连汤倒入。",420],["淋油激香","撒辣椒面花椒蒜末，浇热油激香撒香菜。",120]]}
+  ];
+
+  /* B 域：个人私有（仅本人可见、免审核、不带 status） */
+  var PERSONAL=[
+    {id:"p1",name:"奶奶的糖水蛋",icon:"🥚",g:["#e8b06a","#c8893c"],desc:"小时候生病才有的那一碗",diff:"简单",cats:["汤粥"],tags:["家里"],domain:"personal",
+     ing:{"主料":[["鸡蛋","2","个"],["冰糖","20","g"]],"辅料":[["姜","2","片"]],"调味":[["清水","2","碗"]]},
+     fg:[{t:"静置",h:"关火后焖 3 分钟再捞",d:"奶奶说这时候蛋黄刚好凝住又不噎人，早了稀、晚了干。",from:"我自己的记录",step:3},
+         {t:"去腥",h:"姜片要和冷水一起下",d:"水开再放姜，辛味出不来，蛋会有腥气。",from:"我自己的记录",step:1}],
+     story:"只有发烧那天才有，碗底总沉着一小块没化开的冰糖。",src:"个人记录 · 仅本人可见 · 无审核、不对外分享",
+     steps:[["冷水下姜","两碗清水加姜片，冷水下锅。",180],["下蛋小火煮","鸡蛋轻放锅中，小火煮 8 分钟。",480],["加糖关火焖","加冰糖搅化，关火焖 3 分钟再盛出。",180]]},
+    {id:"p2",name:"爸爸的葱油面",icon:"🍜",g:["#d9a45b","#a9742c"],desc:"葱要炸到刚刚焦",diff:"简单",cats:["快手"],tags:["家里"],domain:"personal",
+     ing:{"主料":[["细面条","1","把"],["小葱","1","把"]],"辅料":[["食用油","4","勺"]],"调味":[["生抽","2","勺"],["老抽","0.5","勺"],["糖","1","小勺"]]},
+     fg:[{t:"火候",h:"葱白先下、葱绿后下",d:"一起下锅葱绿早焦了。葱白炸出香再放葱绿，颜色才一致。",from:"我自己的记录",step:2},
+         {t:"静置",h:"熬好的葱油放一夜再用",d:"爸爸总头天晚上熬，说隔夜的葱油才「沉」，当天用香气是浮的。",from:"我自己的记录",step:3}],
+     story:"周末早上厨房里那股葱油味，比闹钟管用。",src:"个人记录 · 仅本人可见 · 无审核、不对外分享",
+     steps:[["煮面","水开下面条，煮至刚断生捞出过凉。",300],["熬葱油","小火下葱白，微黄后下葱绿，炸至焦香。",480],["调汁拌面","生抽老抽糖兑匀，淋热葱油拌面。",120]]}
+  ];
+
+  /* C 域：投稿通道（端上只显示已收到 / 已收录两态） */
+  var SUBMISSIONS=[
+    {name:"外婆的蒸蛋羹",state:"已收录",note:"已收录到官方公开库，保留署名「小满」"}
+  ];
+
+  function fmt(sec){sec=Math.max(0,Math.floor(sec));var m=Math.floor(sec/60),s=sec%60;return String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");}
+  function durText(sec){var m=Math.round(sec/60);return m>=60?(Math.floor(m/60)+"小时"+(m%60?m%60+"分":"")):(m+"分钟");}
+  function $(id){return document.getElementById(id);}
+  function toast(msg){var t=$("toast");t.textContent=msg;t.classList.add("show");clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove("show");},1900);}
+  function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+  function allDishes(){return DISHES.concat(PERSONAL);}
+  function findDish(id){var a=allDishes();for(var i=0;i<a.length;i++)if(a[i].id===id)return a[i];return null;}
+  function detailCount(){return DISHES.reduce(function(a,d){return a+d.fg.length;},0);}
+  function ingFlat(d){var out=[];Object.keys(d.ing).forEach(function(g){d.ing[g].forEach(function(it){out.push({group:g,n:it[0],q:it[1],u:it[2]});});});return out;}
+  function scaleQty(q,r){if(r===1||!/^\d+(\.\d+)?$/.test(q))return q;var v=parseFloat(q)*r;return Math.abs(v-Math.round(v))<0.05?String(Math.round(v)):v.toFixed(1);}
+
+  /* ================= 全局状态 ================= */
+  var runtime={};
+  function getRT(d){
+    if(!runtime[d.id]){
+      runtime[d.id]={steps:d.steps.map(function(s,i){return {idx:i,name:s[0],desc:s[1],def:s[2],duration:s[2],remain:s[2],running:false,started:false,done:false,endAt:0,timer:null};}),activeIdx:0,autoNext:true};
+    }
+    return runtime[d.id];
+  }
+  var currentDish=null, RT=null, detailFrom="search";
+  var timeupStep=-1, editingIdx=-1;
+  var CATS=["全部","家常","快手","炖煮","素菜","蒸菜","汤粥"];
+  var activeCat="全部", activeDom="all", activeDest="public", serving=2;
+  var checks={}, fgOpen={}, fgVotes={}, storyOpen={}, saved={};
+  var VIEWS={discover:"viewDiscover",search:"viewSearch",detail:"viewDetail",cook:"viewCook",submit:"viewSubmit",mine:"viewMine"};
+  var TABS={viewDiscover:"discover",viewSearch:"search",viewSubmit:"submit",viewMine:"mine"};
+
+  /* ================= 视图切换 ================= */
+  function showView(name){
+    var id=VIEWS[name];
+    Object.keys(VIEWS).forEach(function(k){$(VIEWS[k]).classList.add("hidden");});
+    $(id).classList.remove("hidden");
+    var isTab=!!TABS[id];
+    $("tabbar").classList.toggle("hidden",!isTab);
+    if(isTab){
+      $("tabbar").querySelectorAll(".tab").forEach(function(b){b.classList.toggle("on",b.dataset.tab===TABS[id]);});
+    }
+  }
+  function switchTab(name){
+    if(name==="discover")renderDiscover();
+    if(name==="search")renderDishes();
+    if(name==="submit")renderPolicy();
+    if(name==="mine")renderMine();
+    showView(name);
+  }
+  $("tabbar").querySelectorAll(".tab").forEach(function(b){
+    b.addEventListener("click",function(){switchTab(b.dataset.tab);});
+  });
+
+  /* ================= 发现页 ================= */
+  var PICKS=[["hr",0],["qz",1],["fq",2]];
+  function renderDiscover(){
+    var n=detailCount();
+    $("dcDishes").textContent=DISHES.length;
+    $("dcDetails").textContent=n;
+    $("dcMine").textContent=PERSONAL.length;
+    $("pickList").innerHTML=PICKS.map(function(p){
+      var d=findDish(p[0]),f=d.fg[p[1]];
+      return '<button class="pick" data-id="'+d.id+'"><span class="pt">'+f.t+'</span>'+
+        '<span class="pb"><b>'+esc(f.h)+'</b><span>'+esc(f.d.length>42?f.d.slice(0,42)+"…":f.d)+'</span></span>'+
+        '<span class="pd">'+d.name+' ›</span></button>';
+    }).join("");
+    $("pickList").querySelectorAll(".pick").forEach(function(b){
+      b.addEventListener("click",function(){openDish(b.dataset.id,"discover");});
+    });
+    $("recentList").innerHTML=DISHES.slice(0,3).map(function(d){
+      return dishCard(d);
+    }).join("");
+    bindCards($("recentList"),"discover");
+  }
+  document.querySelectorAll(".topic").forEach(function(b){
+    b.addEventListener("click",function(){
+      var kw=b.dataset.topic;
+      $("searchInput").value=kw;
+      activeCat="全部";activeDom="official";renderCats();renderDomains();renderDishes();
+      switchTab("search");
+      toast("按细节类型「"+kw+"」筛选");
+    });
+  });
+
+  /* ================= 列表 / 搜索 / 域筛选 ================= */
+  function renderDomains(){
+    $("domainRow").querySelectorAll(".dom").forEach(function(b){b.classList.toggle("on",b.dataset.dom===activeDom);});
+  }
+  function renderCats(){
+    $("catRow").innerHTML=CATS.map(function(c){return '<button class="cat'+(c===activeCat?' on':'')+'" data-cat="'+c+'">'+c+'</button>';}).join("");
+    $("catRow").querySelectorAll(".cat").forEach(function(b){b.addEventListener("click",function(){activeCat=b.dataset.cat;renderCats();renderDishes();});});
+  }
+  function dishCard(d){
+    var t=d.steps.reduce(function(a,s){return a+s[2];},0);
+    var isPer=d.domain==="personal";
+    var badge=isPer?'<span class="badge badge-per">🔒 仅自己可见</span>':'<span class="badge badge-off">✓ 官方收录</span>';
+    return '<div class="dish-card" data-id="'+d.id+'">'+
+      '<div class="dish-img" style="background:linear-gradient(145deg,'+d.g[0]+','+d.g[1]+')">'+d.icon+'</div>'+
+      '<div class="dish-info">'+
+        '<div class="dish-title-row"><h3>'+esc(d.name)+'</h3>'+badge+'</div>'+
+        '<div class="dish-sub">'+esc(d.desc)+'</div>'+
+        '<div class="dish-meta"><span class="meta-time">⏱ '+durText(t)+'</span><span>'+d.steps.length+' 步</span><span>'+d.fg.length+' 条细节</span></div>'+
+      '</div><div class="dish-arrow">›</div></div>';
+  }
+  function bindCards(root,from){
+    root.querySelectorAll(".dish-card").forEach(function(c){
+      c.addEventListener("click",function(){openDish(c.dataset.id,from);});
+    });
+  }
+  function renderDishes(){
+    var kw=$("searchInput").value.trim().toLowerCase();
+    $("clearSearch").style.display=kw?"block":"none";
+    var pool=activeDom==="mine"?PERSONAL.slice():(activeDom==="official"?DISHES.slice():allDishes());
+    var list=pool.filter(function(d){
+      var catOk=(activeCat==="全部"||(d.cats||[]).indexOf(activeCat)>=0);
+      var materials=ingFlat(d).map(function(x){return x.n;}).join(" ");
+      var fgt=d.fg.map(function(f){return f.t+" "+f.h;}).join(" ");
+      var hay=(d.name+" "+d.desc+" "+(d.cats||[]).join(" ")+(d.tags||[]).join(" ")+" "+materials+" "+fgt+" "+d.steps.map(function(s){return s[0];}).join(" ")).toLowerCase();
+      return catOk&&(!kw||hay.indexOf(kw)>=0);
+    });
+    var domLabel=activeDom==="mine"?"我的私藏":(activeDom==="official"?"官方收录":"全部内容");
+    $("resultTip").textContent=domLabel+(kw||activeCat!=="全部"?" · 找到 ":" · 共 ")+list.length+" 道菜"+(kw?"（含材料与细节匹配）":"");
+    if(!list.length){
+      $("dishList").innerHTML='<div class="empty"><div class="e-icon">🔍</div><h4>没找到相关菜谱</h4><p>换个关键词，或试试用材料反查，比如「五花肉」「豆腐」</p></div>';
+      return;
+    }
+    $("dishList").innerHTML=list.map(dishCard).join("");
+    bindCards($("dishList"),"search");
+  }
+  $("searchInput").addEventListener("input",renderDishes);
+  $("clearSearch").addEventListener("click",function(){$("searchInput").value="";renderDishes();$("searchInput").focus();});
+  $("domainRow").querySelectorAll(".dom").forEach(function(b){
+    b.addEventListener("click",function(){activeDom=b.dataset.dom;activeCat="全部";renderDomains();renderCats();renderDishes();});
+  });
+
+  /* ================= 详情页：三段式 ================= */
+  function openDish(id,from){
+    var d=findDish(id);if(!d)return;
+    currentDish=d;detailFrom=from||"search";
+    serving=2;
+    renderDetail();
+    showView("detail");
+    $("detailScroll").scrollTo({top:0});
+  }
+  function domainBadge(d){
+    return d.domain==="personal"?'<span class="badge badge-per">🔒 个人记录 · 仅本人可见</span>':'<span class="badge badge-off">✓ 官方收录 · 已审核发布</span>';
+  }
+  function renderDetail(){
+    var d=currentDish;if(!d)return;
+    var isPer=d.domain==="personal";
+    $("detailImg").textContent=d.icon;
+    $("detailImg").style.background="linear-gradient(145deg,"+d.g[0]+","+d.g[1]+")";
+    $("detailName").textContent=d.name;
+    $("detailDesc").textContent=d.desc;
+    var total=d.steps.reduce(function(a,s){return a+s[2];},0);
+    var flat=ingFlat(d);
+    $("detailMeta").innerHTML='<span class="chip">⏱ 约 '+durText(total)+'</span><span class="chip">🧺 '+flat.length+' 项材料</span><span class="chip">💡 '+d.fg.length+' 条细节</span><span class="chip">🔥 '+d.diff+'</span>';
+    $("detailDomainTag").textContent=isPer?"B · 个人私有域":"A · 官方公开域";
+    $("detailSource").innerHTML=domainBadge(d)+'<span>'+esc(d.src)+'</span>';
+    $("startCookBtn").textContent="开始做这道菜 →";
+    $("saveMineBtn").style.display=isPer?"none":"";
+    renderIngredients(d,flat);
+    renderForgotten(d);
+    renderOverview(d);
+  }
+  function renderIngredients(d,flat){
+    var key=d.id,st=checks[key]||(checks[key]={});
+    $("ingCnt").textContent="已备 "+(Object.keys(st).filter(function(k){return st[k];}).length)+" / "+flat.length+" 项";
+    $("servingRow").innerHTML='<span class="sl">份量</span>'+[2,3,4].map(function(n){
+      return '<button data-n="'+n+'"'+(serving===n?' class="on"':'')+'>'+n+' 人份</button>';
+    }).join("");
+    $("servingRow").querySelectorAll("button").forEach(function(b){
+      b.addEventListener("click",function(){serving=+b.dataset.n;renderIngredients(d,ingFlat(d));toast("已按 "+serving+" 人份换算用量");});
+    });
+    var r=serving/2,i=0;
+    $("ingList").innerHTML=Object.keys(d.ing).map(function(g){
+      var rows=d.ing[g].map(function(it){
+        var idx=i++,ck=!!st[idx],q=scaleQty(it[1],r);
+        return '<div class="ing-row'+(ck?' checked':'')+'" data-i="'+idx+'">'+
+          '<span class="tick">✓</span><span class="in">'+esc(it[0])+'</span>'+
+          '<span class="iq">'+esc(q)+esc(it[2]||"")+'</span></div>';
+      }).join("");
+      return '<div class="ing-group">'+g+'</div>'+rows;
+    }).join("");
+    $("ingList").querySelectorAll(".ing-row").forEach(function(el){
+      el.addEventListener("click",function(){
+        var k=+el.dataset.i;st[k]=!st[k];renderIngredients(d,ingFlat(d));
+      });
+    });
+  }
+  function renderForgotten(d){
+    var key=d.id,open=fgOpen[key]==null?0:fgOpen[key];
+    $("fgFlag").textContent=d.fg.length+" 条 · 已审核";
+    $("fgList").innerHTML=d.fg.map(function(f,i){
+      var vk=key+"-"+i,voted=!!fgVotes[vk];
+      return '<div class="fg-item'+(i===open?' open':'')+'" data-i="'+i+'">'+
+        '<div class="fg-t"><span class="fg-type">'+f.t+'</span><span class="fg-step">对应第 '+f.step+' 步</span></div>'+
+        '<div class="fg-h">'+esc(f.h)+'</div>'+
+        '<div class="fg-body">'+esc(f.d)+'</div>'+
+        '<div class="fg-foot"><span class="fg-from">出处：'+esc(f.from)+'</span>'+
+        '<button class="fg-vote'+(voted?' on':'')+'" data-v="'+i+'">'+(voted?'✓ 我也有':'＋ 这条我也有')+'</button></div></div>';
+    }).join("");
+    $("fgList").querySelectorAll(".fg-item").forEach(function(el){
+      el.addEventListener("click",function(e){
+        if(e.target.closest(".fg-vote"))return;
+        var i=+el.dataset.i;fgOpen[key]=i;renderForgotten(d);
+      });
+    });
+    $("fgList").querySelectorAll(".fg-vote").forEach(function(b){
+      b.addEventListener("click",function(e){
+        e.stopPropagation();var vk=key+"-"+(+b.dataset.v);fgVotes[vk]=!fgVotes[vk];renderForgotten(d);
+        toast(fgVotes[vk]?"已记下：这条你家也这么做":"已取消");
+      });
+    });
+    var op=!!storyOpen[key];
+    $("storyCard").classList.toggle("open",op);
+    $("storyText").textContent=d.story;
+    $("storyMore").textContent=op?"—— 这条记忆来自"+(d.domain==="personal"?"你自己的私藏记录，仅你可见，不对外分享。":"用户投稿或家人口述，经内部审核后收录，发布时保留署名。")+"" : "";
+    $("storyCard").onclick=function(){storyOpen[key]=!storyOpen[key];renderForgotten(d);};
+  }
+  function renderOverview(d){
+    $("ovTotal").textContent="共 "+d.steps.length+" 步 · 约 "+durText(d.steps.reduce(function(a,s){return a+s[2];},0));
+    $("ovList").innerHTML=d.steps.map(function(s,i){
+      return '<div class="ov-row"><span class="ov-no">'+(i+1)+'</span><span class="ov-n">'+esc(s[0])+'</span><span class="ov-t">'+fmt(s[2])+'</span></div>';
+    }).join("");
+  }
+  $("backBtn").addEventListener("click",function(){backToOrigin();});
+  function backToOrigin(){
+    if(detailFrom==="mine")renderMine();
+    if(detailFrom==="search")renderDishes();
+    if(detailFrom==="discover")renderDiscover();
+    switchTab(detailFrom in {discover:1,search:1,mine:1}?detailFrom:"search");
+    currentDish=null;RT=null;
+  }
+  $("startCookBtn").addEventListener("click",startCook);
+  $("saveMineBtn").addEventListener("click",function(){
+    if(!currentDish)return;
+    var key=currentDish.id;
+    if(saved[key]){toast("已经在你的私藏里了");return;}
+    saved[key]=true;
+    PERSONAL.push(Object.assign({},currentDish,{id:key+"-mine",domain:"personal",name:currentDish.name+"（我的副本）",
+      src:"个人记录 · 仅本人可见 · 无审核、不对外分享"}));
+    toast("已存进我的私藏 · 仅自己可见，无需审核");
+  });
+
+  /* ================= 做菜模式（唯一计时卡） ================= */
+  function startCook(){
+    if(!currentDish)return;
+    RT=getRT(currentDish);
+    var first=RT.steps.findIndex(function(s){return !s.done;});
+    RT.activeIdx=first<0?0:first;
+    $("cookName").textContent=currentDish.name;
+    $("totalSteps").textContent=RT.steps.length;
+    $("autoToggle").classList.toggle("on",RT.autoNext);
+    buildSteps();renderAllRows();renderFocus();renderProgress();
+    showView("cook");
+    $("scroll").scrollTo({top:0});
+  }
+  $("cookBackBtn").addEventListener("click",function(){
+    if(RT)RT.steps.forEach(function(_,i){pauseAt(i);});
+    renderDetail();showView("detail");$("detailScroll").scrollTo({top:0});
+  });
+  function buildSteps(){
+    $("stepList").innerHTML=RT.steps.map(function(s){
+      return '<div class="step-row" data-idx="'+s.idx+'" id="row-'+s.idx+'">'+
+        '<div class="sr-no" id="srno-'+s.idx+'">'+(s.idx+1)+'</div>'+
+        '<div class="sr-body"><div class="sr-title"><span>'+s.name+'</span><span class="custom-badge" id="srbadge-'+s.idx+'" style="display:none">改</span></div>'+
+        '<div class="sr-sub" id="srsub-'+s.idx+'">⏱ '+fmt(s.duration)+'</div></div>'+
+        '<div class="sr-state" id="srstate-'+s.idx+'">待做</div></div>';
+    }).join("");
+    $("stepList").querySelectorAll(".step-row").forEach(function(el){
+      el.addEventListener("click",function(){setCurrent(+el.dataset.idx);});
+    });
+  }
+  function renderRow(i){
+    if(!RT)return;var s=RT.steps[i],row=$("row-"+i);if(!row)return;
+    row.classList.toggle("done",s.done);
+    row.classList.toggle("active",i===RT.activeIdx&&!s.done);
+    $("srno-"+i).textContent=s.done?"✓":(i+1);
+    $("srbadge-"+i).style.display=(s.duration!==s.def)?"inline-block":"none";
+    $("srsub-"+i).textContent="⏱ "+fmt(s.duration)+(s.duration!==s.def?" · 默认 "+fmt(s.def):"");
+    $("srstate-"+i).textContent=s.done?"已完成":(i===RT.activeIdx?"当前":"待做");
+  }
+  function renderAllRows(){if(RT)RT.steps.forEach(function(_,i){renderRow(i);});}
+  function renderProgress(){
+    if(!RT)return;var done=RT.steps.filter(function(s){return s.done;}).length;
+    $("doneCount").textContent=done;
+    $("progressFill").style.width=(done/RT.steps.length*100)+"%";
+  }
+  function renderFocus(){
+    if(!RT||RT.activeIdx<0)return;
+    var s=RT.steps[RT.activeIdx];
+    $("focusStep").textContent="第 "+(RT.activeIdx+1)+" / "+RT.steps.length+" 步";
+    $("focusTitle").textContent=s.name;
+    $("focusDesc").textContent=s.desc;
+    $("focusStatus").textContent=s.done?"已完成":(s.running?"计时中…":(s.started&&s.remain>0?"已暂停":"准备就绪"));
+    $("focusTime").innerHTML=fmt(s.remain)+(s.done?"":"<small>剩余时间</small>");
+    $("fVal").innerHTML="本步时长 <b>"+fmt(s.duration)+"</b> · 调整 ›";
+    var C=2*Math.PI*52,ratio=s.duration>0?s.remain/s.duration:0;
+    var ring=$("focusRing");
+    ring.style.strokeDashoffset=String(C*(1-ratio));
+    ring.style.stroke=s.done?"var(--green)":"var(--primary-2)";
+    var tg=$("fToggle"),tIcon=$("fToggleIcon"),tLabel=$("fToggleLabel");
+    var playPath="M8 5.5v13l11-6.5z",pausePath="M7 5h3.4v14H7zm6.6 0H17v14h-3.4z",checkPath="M5 12.5l4.5 4.5L19 7";
+    if(s.done){tIcon.innerHTML='<path d="'+checkPath+'"/>';tIcon.setAttribute("fill","none");tIcon.setAttribute("stroke","currentColor");tIcon.setAttribute("stroke-width","2.6");tIcon.setAttribute("stroke-linecap","round");tIcon.setAttribute("stroke-linejoin","round");tLabel.textContent="已完成";}
+    else if(s.running){tIcon.innerHTML='<path d="'+pausePath+'"/>';tIcon.setAttribute("fill","currentColor");tIcon.removeAttribute("stroke");tLabel.textContent="暂停计时";}
+    else if(s.started&&s.remain>0){tIcon.innerHTML='<path d="'+playPath+'"/>';tIcon.setAttribute("fill","currentColor");tIcon.removeAttribute("stroke");tLabel.textContent="继续计时";}
+    else{tIcon.innerHTML='<path d="'+playPath+'"/>';tIcon.setAttribute("fill","currentColor");tIcon.removeAttribute("stroke");tLabel.textContent="开始计时";}
+    tg.classList.toggle("paused",s.started&&!s.running&&!s.done&&s.remain>0);
+    tg.disabled=!!s.done;
+    $("fDone").style.display=s.done?"none":"";
+  }
+  function pauseAt(i){
+    if(!RT)return;var s=RT.steps[i];if(!s.running)return;
+    s.remain=Math.max(0,Math.ceil((s.endAt-Date.now())/1000));
+    s.running=false;clearInterval(s.timer);s.timer=null;
+  }
+  function setCurrent(i){
+    if(!RT)return;
+    if(RT.activeIdx>=0&&RT.activeIdx!==i)pauseAt(RT.activeIdx);
+    RT.activeIdx=i;renderAllRows();renderFocus();
+    $("scroll").scrollTo({top:0,behavior:"smooth"});
+    toast("已切换到第 "+(i+1)+" 步 · "+RT.steps[i].name);
+  }
+  function startTimer(){
+    if(!RT||RT.activeIdx<0)return;
+    var i=RT.activeIdx,s=RT.steps[i];if(s.done)return;
+    if(s.remain<=0)s.remain=s.duration;
+    RT.steps.forEach(function(_,j){if(j!==i)pauseAt(j);});
+    s.running=true;s.started=true;s.endAt=Date.now()+s.remain*1000;
+    var dishId=currentDish.id;
+    s.timer=setInterval(function(){
+      s.remain=Math.max(0,Math.ceil((s.endAt-Date.now())/1000));
+      if(currentDish&&currentDish.id===dishId&&RT.activeIdx===i)renderFocus();
+      if(s.remain<=0){clearInterval(s.timer);s.timer=null;s.running=false;onTimeUp(i,dishId);}
+    },200);
+    renderFocus();renderRow(i);ensureAudio();
+  }
+  function pauseCurrent(){if(RT&&RT.activeIdx>=0){pauseAt(RT.activeIdx);renderFocus();renderRow(RT.activeIdx);}}
+  function toggleCurrent(){if(!RT||RT.activeIdx<0)return;RT.steps[RT.activeIdx].running?pauseCurrent():startTimer();}
+  function resetCurrent(){
+    if(!RT||RT.activeIdx<0)return;var i=RT.activeIdx,s=RT.steps[i];
+    pauseAt(i);s.remain=s.duration;s.done=false;s.started=false;
+    renderFocus();renderRow(i);renderProgress();toast("已重置第 "+(i+1)+" 步");
+  }
+  function ensureAudio(){
+    try{
+      if(!window._actx){var C=window.AudioContext||window.webkitAudioContext;if(C)window._actx=new C();}
+      if(window._actx&&window._actx.state==="suspended")window._actx.resume();
+      if("Notification" in window&&Notification.permission==="default")Notification.requestPermission();
+    }catch(e){}
+  }
+  function playChime(){
+    try{var ctx=window._actx;if(!ctx)return;[880,1109,1319,1760].forEach(function(f,k){var o=ctx.createOscillator(),g=ctx.createGain(),t=ctx.currentTime+k*0.22;o.type="sine";o.frequency.value=f;g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.32,t+0.03);g.gain.exponentialRampToValueAtTime(0.0001,t+0.5);o.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+0.55);});}catch(e){}
+  }
+  function onTimeUp(i,dishId){
+    var s=runtime[dishId].steps[i];timeupStep=i;
+    playChime();
+    if(navigator.vibrate)navigator.vibrate([300,120,300,120,500]);
+    if("Notification" in window&&Notification.permission==="granted"){
+      try{var dname=(currentDish&&currentDish.id===dishId)?currentDish.name:"做菜计时";new Notification("⏰ "+dname+" · 时间到",{body:"「"+s.name+"」完成，去进行下一步吧"});}catch(e){}
+    }
+    $("timeupText").innerHTML="「<b>"+s.name+"</b>」时间到啦，快去看看～";
+    $("timeupOverlay").classList.add("show");
+    if(RT.autoNext){clearTimeout(window._autoNextT);window._autoNextT=setTimeout(function(){if($("timeupOverlay").classList.contains("show"))completeAndNext();},8000);}
+  }
+  function completeAndNext(){
+    clearTimeout(window._autoNextT);$("timeupOverlay").classList.remove("show");
+    var i=timeupStep;if(i<0||!RT)return;
+    var s=RT.steps[i];pauseAt(i);s.done=true;
+    renderRow(i);renderProgress();
+    var next=RT.steps.findIndex(function(x){return !x.done;});
+    if(next===-1){renderFocus();showDone();timeupStep=-1;return;}
+    RT.activeIdx=next;
+    var ns=RT.steps[next];if(ns.remain<=0)ns.remain=ns.duration;
+    renderAllRows();renderFocus();
+    $("scroll").scrollTo({top:0,behavior:"smooth"});
+    toast("接下来：第 "+(next+1)+" 步 · "+ns.name);
+    timeupStep=-1;
+  }
+  function finishCurrent(){
+    if(!RT||RT.activeIdx<0)return;
+    var s=RT.steps[RT.activeIdx];if(s.done){toast("这一步已完成");return;}
+    timeupStep=RT.activeIdx;completeAndNext();
+  }
+  function showDone(){
+    $("doneTitle").textContent=currentDish.name+"完成啦！";
+    $("doneText").innerHTML="色香味俱全，快叫家人来开饭吧～<br>共完成 "+RT.steps.length+" 个步骤，辛苦了！";
+    $("doneOverlay").classList.add("show");playChime();
+    if(navigator.vibrate)navigator.vibrate([200,100,200,100,400]);
+  }
+  function openTimeModal(){
+    if(!RT||RT.activeIdx<0)return;editingIdx=RT.activeIdx;var s=RT.steps[editingIdx];
+    $("minInput").value=Math.floor(s.duration/60);$("secInput").value=s.duration%60;
+    $("timeOverlay").classList.add("show");
+  }
+  $("quickRow").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;$("minInput").value=b.dataset.min;$("secInput").value=0;});
+  $("saveTimeBtn").addEventListener("click",function(){
+    var s=RT.steps[editingIdx],m=Math.max(0,Math.min(180,+$("minInput").value||0)),sec=Math.max(0,Math.min(59,+$("secInput").value||0)),d=m*60+sec;if(d<5)d=5;
+    s.duration=d;if(!s.running)s.remain=d;
+    $("timeOverlay").classList.remove("show");renderFocus();renderRow(editingIdx);toast("本步已设为 "+fmt(d));
+  });
+  $("resetDefaultBtn").addEventListener("click",function(){
+    var s=RT.steps[editingIdx];s.duration=s.def;if(!s.running)s.remain=s.def;
+    $("timeOverlay").classList.remove("show");renderFocus();renderRow(editingIdx);toast("已恢复默认时长");
+  });
+  $("fToggle").addEventListener("click",toggleCurrent);
+  $("fDone").addEventListener("click",finishCurrent);
+  $("fVal").addEventListener("click",openTimeModal);
+  $("resetStepBtn").addEventListener("click",function(){$("timeOverlay").classList.remove("show");resetCurrent();});
+  $("resetAll").addEventListener("click",function(){
+    if(!RT)return;
+    RT.steps.forEach(function(s,i){pauseAt(i);s.done=false;s.started=false;s.duration=s.def;s.remain=s.def;s.running=false;renderRow(i);});
+    RT.activeIdx=0;timeupStep=-1;renderAllRows();renderFocus();renderProgress();
+    $("timeupOverlay").classList.remove("show");$("doneOverlay").classList.remove("show");
+    $("scroll").scrollTo({top:0,behavior:"smooth"});toast("已重置全部步骤");
+  });
+  $("autoToggle").addEventListener("click",function(){if(!RT)return;RT.autoNext=!RT.autoNext;$("autoToggle").classList.toggle("on",RT.autoNext);toast(RT.autoNext?"已开启：到点自动进入下一步":"已关闭：到点需手动下一步");});
+  $("nextStepBtn").addEventListener("click",completeAndNext);
+  $("stayBtn").addEventListener("click",function(){clearTimeout(window._autoNextT);$("timeupOverlay").classList.remove("show");toast("计时已停在 00:00，点「跳过本步」继续");});
+  $("cookAgainBtn").addEventListener("click",function(){$("doneOverlay").classList.remove("show");$("resetAll").click();});
+  $("backListBtn").addEventListener("click",function(){$("doneOverlay").classList.remove("show");$("cookBackBtn").click();});
+
+  /* ================= 投稿页（A/C 域与 B 域分流） ================= */
+  function renderPolicy(){
+    $("policyBox").innerHTML=activeDest==="public"
+      ? '<b>将进入 C 投稿通道</b>：先做机器内容安全检测，再由平台内部审核；采纳并结构化后进入 A 官方公开库，全体可见并保留署名。端上只显示「已收到 / 已收录」两态，不展示审核状态机。'
+      : '<b>将进入 B 个人私有域</b>：仅本人可见（owner-only），无审核、无审核态、无 status 字段。按平台要求，私藏内容默认不提供分享卡片 / 链接给他人；若要对外传播，请改选「贡献到公开菜谱」。';
+  }
+  $("destWrap").querySelectorAll(".dest").forEach(function(b){
+    b.addEventListener("click",function(){
+      activeDest=b.dataset.dest;
+      $("destWrap").querySelectorAll(".dest").forEach(function(x){x.classList.toggle("on",x===b);});
+      $("subSubmit").textContent=activeDest==="public"?"提交，贡献到公开菜谱":"保存，只存进我的私藏";
+      renderPolicy();
+    });
+  });
+  function parseLines(txt){return String(txt||"").split(/[\n,，、;；]+/).map(function(s){return s.trim();}).filter(Boolean);}
+  $("subSubmit").addEventListener("click",function(){
+    var name=$("subName").value.trim();
+    if(!name){toast("先写个菜名吧");$("subName").focus();return;}
+    var ing=parseLines($("subIng").value),lines=parseLines($("subSteps").value),detail=$("subDetail").value.trim(),story=$("subStory").value.trim();
+    if(!lines.length)lines=["记下这道菜的做法"];
+    if(activeDest==="private"){
+      var groups={},items=ing.map(function(x){return [x,"1","份"];});
+      if(!items.length)items=[["材料待补","1","份"]];
+      groups["主料"]=items;groups["辅料"]=[];groups["调味"]=[];
+      var fg=detail?[{t:"家里的小动作",h:detail.length>24?detail.slice(0,24)+"…":detail,d:detail,from:"我自己的记录",step:1}]:[];
+      PERSONAL.push({id:"u"+Date.now(),name:name,icon:"📝",g:["#e8b06a","#c8893c"],desc:"我自己的记录",diff:"简单",cats:[],tags:[],domain:"personal",
+        ing:groups,fg:fg,story:story||"还没写下故事，先记着做法。",src:"个人记录 · 仅本人可见 · 无审核、不对外分享",
+        steps:lines.map(function(l){return [l,"按自己记的做法来",300];})});
+      clearForm();renderMine();switchTab("mine");
+      toast("已存进我的私藏 · 仅自己可见，无需审核");
+    }else{
+      SUBMISSIONS.unshift({name:name,state:"已收到",note:"机器内容安全检测通过后，由平台内部审核；收录后保留署名"});
+      clearForm();renderMine();switchTab("mine");
+      toast("已收到 · 审核由平台内部完成，收录后会告诉你");
+    }
+  });
+  function clearForm(){["subName","subIng","subSteps","subDetail","subStory"].forEach(function(k){$(k).value="";});}
+  $("subClear").addEventListener("click",function(){clearForm();toast("表单已清空");});
+
+  /* ================= 我的 ================= */
+  function renderMine(){
+    $("mineCnt").textContent=PERSONAL.length+" 条 · owner-only";
+    $("mineList").innerHTML=PERSONAL.map(function(d){
+      return '<div class="mine-row click" data-id="'+d.id+'">'+
+        '<div class="mi" style="background:linear-gradient(145deg,'+d.g[0]+','+d.g[1]+')">'+d.icon+'</div>'+
+        '<div class="mb"><b>'+esc(d.name)+'</b><span>🔒 仅本人可见 · 无审核 · 无审核状态 · 不对外分享</span></div>'+
+        '<div class="ms"><span class="badge badge-per">B 域</span></div></div>';
+    }).join("")+'<div class="empty" style="padding:14px"><p>在「投稿」页选「只存进我的私藏」，就能继续添加</p></div>';
+    $("mineList").querySelectorAll(".mine-row.click").forEach(function(el){
+      el.addEventListener("click",function(){openDish(el.dataset.id,"mine");});
+    });
+    $("submitList").innerHTML=SUBMISSIONS.map(function(s){
+      var ok=s.state==="已收录",cls=ok?"badge-ok":"badge-wait";
+      return '<div class="mine-row"><div class="mi" style="background:#FFF0DC">✍️</div>'+
+        '<div class="mb"><b>'+esc(s.name)+'</b><span>'+esc(s.note)+'</span></div>'+
+        '<div class="ms"><span class="badge '+cls+'">'+s.state+'</span></div></div>';
+    }).join("");
+  }
+
+  /* ================= 初始化 ================= */
+  renderCats();renderDomains();renderDishes();renderPolicy();renderDiscover();
+})();
+</script>
+</body>
+</html>

@@ -19,7 +19,7 @@
 2. **改样式 / 配色前先出可视化方案预览**；用户未明确选定前不得落盘改文件。
 3. **用户说「先不改代码」「不要直接改」时**：只给方案，不改任何文件。
 4. `plans/**` 是草案，**禁止**作为架构决策 / 行为契约 / 不变量的依据；被采纳后须迁移到 SSOT。
-5. **先跑通再逐步加功能**：不要一次性把 `cooking-timer-prototype.html` 全量搬进小程序。本阶段只交付最简 hello 页面。
+5. **先跑通再逐步加功能**：不要一次性把 `plans/cooking-timer-prototype.html` 全量搬进小程序。本阶段只交付最简 hello 页面。
 6. 不实现用户没要求的功能；不顺手重构没坏的东西。
 
 ## 当前状态（2026-11-18）
@@ -28,7 +28,7 @@
 |------|------|------|
 | 原生小程序骨架（**TypeScript**） | `miniprogram/` | 单一 hello 页面；`npm run typecheck` 0 error、工具编译通过、真机预览二维码已生成（`plans/preview-qr.png`） |
 | 类型检查依赖 | `miniprogram/package.json` | devDependencies：`typescript` + `miniprogram-api-typings`；`node_modules/` 已忽略，不进小程序包 |
-| 多菜谱计时 HTML 原型 | `cooking-timer-prototype.html` | 12 菜 / 58 步，元气橙蓝主题；**尚未移植** |
+| 多菜谱计时 HTML 原型 | `plans/cooking-timer-prototype.html` | 12 菜 / 58 步，元气橙蓝主题；**尚未移植** |
 | 小程序凭证 | `docs/wxamp-info.md` | AppID + AppSecret（敏感） |
 | 架构设计稿 | `plans/记忆里的美食-*.md` | **未实施**，草案非权威，勿据此改代码 |
 | 调研 / 计划文档 | `plans/` | 草案，非权威；含真机预览二维码 `preview-qr.png` |
